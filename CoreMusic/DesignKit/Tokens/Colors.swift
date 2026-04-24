@@ -13,7 +13,7 @@ extension Color {
     static let cmSuccess = Color("Success")
     static let cmInfo = Color("Info")
 
-    static let cmFavorite = Color("favorite")
+    static let cmFavorite = Color("Favorite")
 
     // MARK: - Text
 

@@ -4,7 +4,7 @@ import SwiftUI
 struct CoreMusicApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            OnboardingFlowView(onFinish: { }) // TODO: route to main app and check for onboarding completion flag in db
         }
     }
 }

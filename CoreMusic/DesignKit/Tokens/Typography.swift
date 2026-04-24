@@ -3,10 +3,10 @@ import SwiftUI
 // MARK: - Typography Tokens
 
 extension Font {
-    static let cmScreenTitle: Font = .largeTitle
-    static let cmMemoryTitle: Font = .title
-    static let cmSectionTitle: Font = .title2
-    static let cmSubtitle: Font = .title3
+    static let cmScreenTitle: Font = .largeTitle.bold()
+    static let cmMemoryTitle: Font = .title.bold()
+    static let cmSectionTitle: Font = .title2.bold()
+    static let cmSubtitle: Font = .title3.weight(.semibold)
     static let cmCardTitle: Font = .headline
     static let cmBody: Font = .body
     static let cmCallout: Font = .callout

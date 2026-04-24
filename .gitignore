@@ -1,0 +1,21 @@
+# Xcode user-specific
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# Build artifacts
+DerivedData/
+build/
+.build/
+
+# SwiftPM
+.swiftpm/
+
+
+# Fastlane
+fastlane/report.xml
+fastlane/screenshots
+
+# macOS
+.DS_Store
+
