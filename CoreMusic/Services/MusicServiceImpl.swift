@@ -34,8 +34,13 @@ final class MusicServiceImpl: MusicService {
         var request = MusicLibraryRequest<Song>()
         request.sort(by: \.libraryAddedDate, ascending: false)
         let response = try await request.response()
-        let tracks = response.items.map { $0.toLibraryTrack() }
+        let songs = Array(response.items)
+        let tracks = await Task.detached(priority: .userInitiated) {
+            songs.map { $0.toLibraryTrack() }
+        }.value
+        let tracksWithArtwork = tracks.filter { $0.artwork != nil || $0.artworkURL != nil }.count
         log.info("Fetched \(tracks.count) songs from library")
+        log.info("Tracks with artwork available: \(tracksWithArtwork)")
         return tracks
     }
 
@@ -52,6 +57,7 @@ fileprivate extension Song {
             id: self.id.rawValue,
             title: self.title,
             artistName: self.artistName,
+            artwork: self.artwork,
             artworkURL: self.artwork?.url(width: 300, height: 300),
             libraryAddedDate: self.libraryAddedDate,
             durationSeconds: self.duration

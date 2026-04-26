@@ -3,7 +3,7 @@ import Foundation
 enum LibrarySectionBuilder {
     // MARK: - Methods
 
-    static func group(_ tracks: [LibraryTrack]) -> [LibrarySection] {
+    nonisolated static func group(_ tracks: [LibraryTrack]) -> [LibrarySection] {
         var groups: [String: GroupEntry] = [:]
         var insertionOrder: [String] = []
 
@@ -50,21 +50,13 @@ enum LibrarySectionBuilder {
 
     // MARK: - Private properties
 
-    private static let noDateKey = "no-date"
-    private static let noDateTitle = "Без даты"
-
-    private static let displayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.dateFormat = "LLLL yyyy"
-        return formatter
-    }()
-
-    private static let calendar = Calendar(identifier: .gregorian)
+    nonisolated private static let noDateKey = "no-date"
+    nonisolated private static let noDateTitle = "Без даты"
+    nonisolated private static let calendar = Calendar(identifier: .gregorian)
 
     // MARK: - Private methods
 
-    private static func key(for track: LibraryTrack) -> String {
+    nonisolated private static func key(for track: LibraryTrack) -> String {
         guard let date = track.libraryAddedDate else { return noDateKey }
         let components = calendar.dateComponents([.year, .month], from: date)
         let year = components.year ?? 0
@@ -72,13 +64,16 @@ enum LibrarySectionBuilder {
         return String(format: "%04d-%02d", year, month)
     }
 
-    private static func sortDate(for track: LibraryTrack) -> Date? {
+    nonisolated private static func sortDate(for track: LibraryTrack) -> Date? {
         guard let date = track.libraryAddedDate else { return nil }
         let components = calendar.dateComponents([.year, .month], from: date)
         return calendar.date(from: components)
     }
 
-    private static func format(date: Date) -> String {
-        displayFormatter.string(from: date).capitalized
+    nonisolated private static func format(date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.dateFormat = "LLLL yyyy"
+        return formatter.string(from: date).capitalized
     }
 }

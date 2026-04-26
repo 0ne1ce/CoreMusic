@@ -13,6 +13,7 @@ protocol LibraryViewModel: ObservableObject {
     // MARK: - Methods
 
     func onAppear() async
+    func onSceneDidBecomeActive() async
     func retry() async
     func openSettings()
     func onTrackAddTap(_ track: LibraryTrack)
@@ -36,13 +37,26 @@ final class LibraryViewModelImpl: LibraryViewModel {
     // MARK: - Public methods
 
     func onAppear() async {
-        if case .loaded = state, MusicAuthorization.currentStatus == .authorized {
+        guard shouldLoadOnAppear else {
             return
         }
+
         await loadLibrary()
     }
 
     func retry() async {
+        guard !isLoadInProgress else {
+            return
+        }
+
+        await loadLibrary()
+    }
+
+    func onSceneDidBecomeActive() async {
+        guard shouldReloadOnForeground else {
+            return
+        }
+
         await loadLibrary()
     }
 
@@ -60,33 +74,152 @@ final class LibraryViewModelImpl: LibraryViewModel {
     private let router: any LibraryRouter
     private let musicService: any MusicService
     private let log = Logger(subsystem: "com.coremusic.app", category: "LibraryViewModel")
+    private var fullSectionsTask: Task<Void, Never>?
+    private var isLoadInProgress = false
+    private var loadRevision = 0
 
     // MARK: - Private methods
 
     private func loadLibrary() async {
-        state = .requestingAuthorization
-        let status = await musicService.requestAuthorizationIfNeeded()
+        guard !isLoadInProgress else {
+            return
+        }
 
-        guard status == .authorized else {
-            log.info("Authorization not granted: \(String(describing: status), privacy: .public)")
-            state = .denied
+        isLoadInProgress = true
+        defer {
+            isLoadInProgress = false
+        }
+
+        guard await requestAuthorization() else {
             return
         }
 
         state = .loading
         do {
             let tracks = try await musicService.fetchLibrarySongs()
-            if tracks.isEmpty {
-                state = .empty
+            guard !handleEmptyTracksIfNeeded(tracks) else {
+                return
             }
-            else {
-                let sections = LibrarySectionBuilder.group(tracks)
-                state = .loaded(sections)
-            }
+
+            let revision = startNewLoadRevision()
+            let initialSections = buildInitialSections(from: tracks)
+            state = .loaded(initialSections)
+
+            scheduleFullSectionsUpdateIfNeeded(
+                tracks: tracks,
+                revision: revision
+            )
         }
         catch {
-            log.error("Failed to load library: \(error.localizedDescription, privacy: .public)")
-            state = .error("Не удалось загрузить медиатеку. Попробуйте ещё раз.")
+            handleLoadError(error)
         }
     }
+
+    private func requestAuthorization() async -> Bool {
+        state = .requestingAuthorization
+        let status = await musicService.requestAuthorizationIfNeeded()
+
+        guard status == .authorized else {
+            log.info("Authorization not granted: \(String(describing: status), privacy: .public)")
+            state = .denied
+            return false
+        }
+
+        return true
+    }
+
+    private func handleEmptyTracksIfNeeded(_ tracks: [LibraryTrack]) -> Bool {
+        guard tracks.isEmpty else {
+            return false
+        }
+
+        cancelFullSectionsTask()
+        state = .empty
+        return true
+    }
+
+    private func startNewLoadRevision() -> Int {
+        loadRevision += 1
+        return loadRevision
+    }
+
+    private func buildInitialSections(from tracks: [LibraryTrack]) -> [LibrarySection] {
+        let initialTracks = Array(tracks.prefix(Constants.initialTrackCount))
+        return LibrarySectionBuilder.group(initialTracks)
+    }
+
+    private func scheduleFullSectionsUpdateIfNeeded(
+        tracks: [LibraryTrack],
+        revision: Int
+    ) {
+        guard tracks.count > Constants.initialTrackCount else {
+            return
+        }
+
+        cancelFullSectionsTask()
+        fullSectionsTask = Task { [tracks] in
+            let fullSections = await Task.detached(priority: .utility) {
+                LibrarySectionBuilder.group(tracks)
+            }.value
+
+            guard !Task.isCancelled else {
+                return
+            }
+
+            guard revision == self.loadRevision else {
+                return
+            }
+
+            self.state = .loaded(fullSections)
+        }
+    }
+
+    private func handleLoadError(_ error: Error) {
+        cancelFullSectionsTask()
+        log.error("Failed to load library: \(error.localizedDescription, privacy: .public)")
+        state = .error("Не удалось загрузить медиатеку. Попробуйте ещё раз.")
+    }
+
+    private func cancelFullSectionsTask() {
+        fullSectionsTask?.cancel()
+        fullSectionsTask = nil
+    }
+
+    private var shouldLoadOnAppear: Bool {
+        guard !isLoadInProgress else {
+            return false
+        }
+
+        if case .loaded = state {
+            return MusicAuthorization.currentStatus != .authorized
+        }
+
+        switch state {
+        case .idle, .denied, .empty, .error:
+            return true
+        case .requestingAuthorization, .loading:
+            return false
+        case .loaded:
+            return false
+        }
+    }
+
+    private var shouldReloadOnForeground: Bool {
+        guard !isLoadInProgress else {
+            return false
+        }
+
+        switch state {
+        case .idle:
+            return false
+        case .requestingAuthorization, .loading:
+            return false
+        case .denied, .empty, .error, .loaded:
+            return true
+        }
+    }
+}
+
+private enum Constants {
+    static let initialTrackCount = 40
 }

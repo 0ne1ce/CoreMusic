@@ -17,6 +17,14 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
         .background(Color.cmBackgroundPrimary)
         .navigationTitle(viewModel.navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: { viewModel.onCloseTap() }) {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(Color.cmTextPrimary)
+                }
+            }
+        }
     }
 
     // MARK: - Initializer

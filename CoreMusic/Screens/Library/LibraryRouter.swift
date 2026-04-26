@@ -16,7 +16,7 @@ final class LibraryRouterImpl: LibraryRouter {
     // MARK: - Methods
 
     func goToCreateMemory(songID: String) {
-        appRouter.push(.createMemory(songID: songID))
+        appRouter.presentCover(.createMemory(songID: songID))
     }
 
     // MARK: - Private properties

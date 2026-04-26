@@ -52,6 +52,7 @@ extension MockMusicService {
                 id: "preview-1",
                 title: "Bohemian Rhapsody",
                 artistName: "Queen",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: april2026,
                 durationSeconds: 354
@@ -60,6 +61,7 @@ extension MockMusicService {
                 id: "preview-2",
                 title: "Imagine",
                 artistName: "John Lennon",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: april2026Earlier,
                 durationSeconds: 183
@@ -68,6 +70,7 @@ extension MockMusicService {
                 id: "preview-3",
                 title: "Hotel California",
                 artistName: "Eagles",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: march2026,
                 durationSeconds: 391
@@ -76,6 +79,7 @@ extension MockMusicService {
                 id: "preview-4",
                 title: "Stairway to Heaven",
                 artistName: "Led Zeppelin",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: march2026Earlier,
                 durationSeconds: 482
@@ -84,6 +88,7 @@ extension MockMusicService {
                 id: "preview-5",
                 title: "Wonderwall",
                 artistName: "Oasis",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: january2026,
                 durationSeconds: 258
@@ -92,6 +97,7 @@ extension MockMusicService {
                 id: "preview-6",
                 title: "Smells Like Teen Spirit",
                 artistName: "Nirvana",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: january2026Earlier,
                 durationSeconds: 301
@@ -100,6 +106,7 @@ extension MockMusicService {
                 id: "preview-7",
                 title: "Старый трек без даты",
                 artistName: "Unknown Artist",
+                artwork: nil,
                 artworkURL: nil,
                 libraryAddedDate: nil,
                 durationSeconds: 200

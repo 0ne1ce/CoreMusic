@@ -11,7 +11,7 @@ struct OnboardingFirstSlideView: View {
 
             TrackCardView(
                 model: .onboarding,
-                onReveal: onSwipeTrack
+                interactionMode: .swipeReveal(onReveal: onSwipeTrack)
             )
         }
         .padding(.horizontal, Spacing.lg)
@@ -20,9 +20,14 @@ struct OnboardingFirstSlideView: View {
 
 fileprivate extension TrackCardModel {
     static let onboarding = TrackCardModel(
-        id: "onboarding-track-example",
-        title: "Ваш трек",
-        artist: "Ваш любимый артист",
-        artworkURL: nil
+        track: LibraryTrack(
+            id: "onboarding-track-example",
+            title: "Ваш трек",
+            artistName: "Ваш любимый артист",
+            artwork: nil,
+            artworkURL: nil,
+            libraryAddedDate: nil,
+            durationSeconds: nil
+        )
     )
 }
