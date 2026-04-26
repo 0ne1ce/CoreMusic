@@ -1,9 +1,6 @@
 import SwiftUI
 
 struct OnboardingThirdSlideView: View {
-
-    @State private var isFavorite = false
-
     var body: some View {
         ZStack(alignment: .bottom) {
             Image.cmOnboarding4
@@ -21,6 +18,8 @@ struct OnboardingThirdSlideView: View {
         .frame(height: 282)
         .padding(.horizontal, Spacing.md)
     }
+    
+    @State private var isFavorite = false
 
     private var memoryTitle: some View {
         Text("Поход")
@@ -31,8 +30,4 @@ struct OnboardingThirdSlideView: View {
             .background(.ultraThinMaterial)
 
     }
-}
-
-#Preview {
-    OnboardingThirdSlideView()
 }

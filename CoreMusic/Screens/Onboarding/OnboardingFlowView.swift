@@ -57,7 +57,3 @@ struct OnboardingFlowView: View {
         }
     }
 }
-
-#Preview {
-    OnboardingFlowView(onFinish: { })
-}

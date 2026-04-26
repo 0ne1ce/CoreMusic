@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct OnboardingFirstSlideView: View {
-
     let onSwipeTrack: () -> Void
 
     var body: some View {
