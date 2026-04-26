@@ -6,7 +6,6 @@ protocol LibraryViewModel: ObservableObject {
     // MARK: - Properties
 
     var title: String { get }
-    var createMemoryButtonTitle: String { get }
 
     // MARK: - Methods
 
@@ -22,8 +21,9 @@ final class LibraryViewModelImpl: LibraryViewModel {
 
     // MARK: - Initializer
 
-    init(router: any LibraryRouter) {
+    init(router: any LibraryRouter, musicService: any MusicService) {
         self.router = router
+        self.musicService = musicService
     }
 
     // MARK: - Methods
@@ -35,4 +35,5 @@ final class LibraryViewModelImpl: LibraryViewModel {
     // MARK: - Private properties
 
     private let router: any LibraryRouter
+    private let musicService: any MusicService
 }

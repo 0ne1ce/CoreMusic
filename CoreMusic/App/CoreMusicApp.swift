@@ -13,9 +13,6 @@ struct CoreMusicApp: App {
         WindowGroup {
             RootView(factories: deps.factories)
                 .environment(deps.appRouter)
-            // TODO: add new services, for example:
-            // .environment(deps.musicService)
-            // .environment(deps.playerService)
         }
     }
 }
