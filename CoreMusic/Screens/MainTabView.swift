@@ -23,6 +23,7 @@ struct MainTabView: View {
                 .tabItem { Label("Воспоминания", systemImage: "greetingcard") }
                 .tag(AppRouter.Tab.memories)
         }
+        .tint(.cmPrimarySecondary)
         .fullScreenCover(item: $appRouter.presentedCover) { cover in
             NavigationStack(path: $appRouter.coverPath) {
                 coverRoot(for: cover)

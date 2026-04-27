@@ -41,7 +41,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
             return
         }
 
-        await loadLibrary()
+        await loadLibrary(presentation: .replaceWithLoading)
     }
 
     func retry() async {
@@ -49,7 +49,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
             return
         }
 
-        await loadLibrary()
+        await loadLibrary(presentation: .replaceWithLoading)
     }
 
     func onSceneDidBecomeActive() async {
@@ -57,7 +57,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
             return
         }
 
-        await loadLibrary()
+        await loadLibrary(presentation: .keepCurrentContent)
     }
 
     func openSettings() {
@@ -80,7 +80,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
 
     // MARK: - Private methods
 
-    private func loadLibrary() async {
+    private func loadLibrary(presentation: LoadPresentation) async {
         guard !isLoadInProgress else {
             return
         }
@@ -90,11 +90,14 @@ final class LibraryViewModelImpl: LibraryViewModel {
             isLoadInProgress = false
         }
 
-        guard await requestAuthorization() else {
+        guard await requestAuthorization(presentation: presentation) else {
             return
         }
 
-        state = .loading
+        if presentation == .replaceWithLoading {
+            state = .loading
+        }
+
         do {
             let tracks = try await musicService.fetchLibrarySongs()
             guard !handleEmptyTracksIfNeeded(tracks) else {
@@ -102,12 +105,20 @@ final class LibraryViewModelImpl: LibraryViewModel {
             }
 
             let revision = startNewLoadRevision()
-            let initialSections = buildInitialSections(from: tracks)
-            state = .loaded(initialSections)
+            let shouldShowInitialSections = shouldShowInitialSections(
+                for: tracks,
+                presentation: presentation
+            )
 
-            scheduleFullSectionsUpdateIfNeeded(
+            if shouldShowInitialSections {
+                let initialSections = buildInitialSections(from: tracks)
+                state = .loaded(initialSections)
+            }
+
+            scheduleLoadedStateUpdate(
                 tracks: tracks,
-                revision: revision
+                revision: revision,
+                shouldShowInitialSections: shouldShowInitialSections
             )
         }
         catch {
@@ -115,8 +126,11 @@ final class LibraryViewModelImpl: LibraryViewModel {
         }
     }
 
-    private func requestAuthorization() async -> Bool {
-        state = .requestingAuthorization
+    private func requestAuthorization(presentation: LoadPresentation) async -> Bool {
+        if presentation == .replaceWithLoading {
+            state = .requestingAuthorization
+        }
+
         let status = await musicService.requestAuthorizationIfNeeded()
 
         guard status == .authorized else {
@@ -148,11 +162,14 @@ final class LibraryViewModelImpl: LibraryViewModel {
         return LibrarySectionBuilder.group(initialTracks)
     }
 
-    private func scheduleFullSectionsUpdateIfNeeded(
+    private func scheduleLoadedStateUpdate(
         tracks: [LibraryTrack],
-        revision: Int
+        revision: Int,
+        shouldShowInitialSections: Bool
     ) {
-        guard tracks.count > Constants.initialTrackCount else {
+        if tracks.count <= Constants.initialTrackCount {
+            let sections = LibrarySectionBuilder.group(tracks)
+            state = .loaded(sections)
             return
         }
 
@@ -162,16 +179,23 @@ final class LibraryViewModelImpl: LibraryViewModel {
                 LibrarySectionBuilder.group(tracks)
             }.value
 
-            guard !Task.isCancelled else {
-                return
-            }
-
-            guard revision == self.loadRevision else {
+            if Task.isCancelled || revision != self.loadRevision {
                 return
             }
 
             self.state = .loaded(fullSections)
         }
+    }
+
+    private func shouldShowInitialSections(
+        for tracks: [LibraryTrack],
+        presentation: LoadPresentation
+    ) -> Bool {
+        if presentation == .replaceWithLoading {
+            return true
+        }
+
+        return currentLoadedTrackCount != tracks.count
     }
 
     private func handleLoadError(_ error: Error) {
@@ -218,8 +242,23 @@ final class LibraryViewModelImpl: LibraryViewModel {
             return true
         }
     }
+
+    private var currentLoadedTrackCount: Int? {
+        guard case let .loaded(sections) = state else {
+            return nil
+        }
+
+        return sections.reduce(0) { partialResult, section in
+            partialResult + section.tracks.count
+        }
+    }
 }
 
 private enum Constants {
     static let initialTrackCount = 40
+}
+
+private enum LoadPresentation {
+    case replaceWithLoading
+    case keepCurrentContent
 }
