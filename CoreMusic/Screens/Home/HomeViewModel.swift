@@ -22,6 +22,7 @@ protocol HomeViewModel: ObservableObject {
     // MARK: - Methods
 
     func onAppear() async
+    func onProfileTap()
     func onSectionTap(_ section: HomeSection)
     func onMemoryTap(_ memory: Memory, in section: HomeSection)
     func onFavoriteTap(_ memory: Memory)
@@ -39,6 +40,7 @@ final class HomeViewModelImpl: HomeViewModel {
     @Published private(set) var favoriteMemories: [Memory] = []
     @Published private(set) var recentTracks: [LibraryTrack] = []
     @Published private(set) var isLoadingTracks = false
+    private(set) var totalTracksCount = 0
 
     var hasAnyContent: Bool {
         !recentMemories.isEmpty || !recentTracks.isEmpty || !favoriteMemories.isEmpty || isLoadingTracks
@@ -73,6 +75,18 @@ final class HomeViewModelImpl: HomeViewModel {
         if MusicAuthorization.currentStatus == .authorized, recentTracks.isEmpty {
             await loadTracks()
         }
+    }
+
+    func onProfileTap() {
+        let allMemories: [Memory]
+        do { allMemories = try memoryRepository.fetchMemories() }
+        catch { allMemories = [] }
+
+        router.openProfile(
+            totalMemories: allMemories.count,
+            favoriteMemories: allMemories.filter(\.isFavorite).count,
+            totalTracks: totalTracksCount
+        )
     }
 
     func onSectionTap(_ section: HomeSection) {
@@ -143,6 +157,7 @@ final class HomeViewModelImpl: HomeViewModel {
         do {
             let tracks = try await musicService.fetchLibrarySongs()
             recentTracks = Array(tracks.prefix(Constants.maxTracks))
+            totalTracksCount = tracks.count
         }
         catch { }
     }

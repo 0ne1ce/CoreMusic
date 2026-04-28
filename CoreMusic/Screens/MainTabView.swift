@@ -94,6 +94,12 @@ struct MainTabView: View {
         switch sheet {
         case .player:
             trackPlayerFactory.makeTrackPlayerScreen()
+        case let .profile(totalMemories, favoriteMemories, totalTracks):
+            ProfileView(
+                totalMemories: totalMemories,
+                favoriteMemories: favoriteMemories,
+                totalTracks: totalTracks
+            )
         }
     }
 

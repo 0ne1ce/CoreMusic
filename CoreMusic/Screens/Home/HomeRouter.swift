@@ -5,6 +5,7 @@ protocol HomeRouter: AnyObject {
     func goToTab(_ tab: AppRouter.Tab)
     func openCarousel(startMemoryID: UUID, memoryIDs: [UUID])
     func openCreateMemory(songID: String)
+    func openProfile(totalMemories: Int, favoriteMemories: Int, totalTracks: Int)
 }
 
 @MainActor
@@ -27,6 +28,14 @@ final class HomeRouterImpl: HomeRouter {
 
     func openCreateMemory(songID: String) {
         appRouter.presentCover(.createMemory(songID: songID))
+    }
+
+    func openProfile(totalMemories: Int, favoriteMemories: Int, totalTracks: Int) {
+        appRouter.presentSheet(.profile(
+            totalMemories: totalMemories,
+            favoriteMemories: favoriteMemories,
+            totalTracks: totalTracks
+        ))
     }
 
     // MARK: - Private properties

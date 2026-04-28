@@ -15,6 +15,15 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         .navigationTitle(viewModel.title)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color.cmBackgroundPrimary)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { viewModel.onProfileTap() } label: {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Color.cmPrimaryLight)
+                }
+            }
+        }
         .task { await viewModel.onAppear() }
         .onChange(of: appRouter.presentedCover) { _, newValue in
             if newValue == nil {

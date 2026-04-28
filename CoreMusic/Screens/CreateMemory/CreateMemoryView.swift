@@ -84,6 +84,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
     // MARK: - Private properties
 
     @StateObject private var viewModel: ViewModel
+    @StateObject private var locationSearch = LocationSearchService()
     @FocusState private var isInputFieldFocused: Bool
 
     // MARK: - Private methods
@@ -231,16 +232,48 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
         }
 
         if viewModel.isLocationEnabled {
-            TextField(
-                "Имя локации",
-                text: Binding(
-                    get: { viewModel.locationName },
-                    set: { viewModel.locationName = $0 }
+            VStack(alignment: .leading, spacing: 0) {
+                TextField(
+                    "Начните вводить название",
+                    text: Binding(
+                        get: { viewModel.locationName },
+                        set: {
+                            viewModel.locationName = $0
+                            locationSearch.query = $0
+                        }
+                    )
                 )
-            )
-            .textFieldStyle(.plain)
-            .tint(.primaryLightCm)
-            .focused($isInputFieldFocused)
+                .textFieldStyle(.plain)
+                .tint(.primaryLightCm)
+                .focused($isInputFieldFocused)
+
+                if !locationSearch.suggestions.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(locationSearch.suggestions) { suggestion in
+                            Button {
+                                viewModel.locationName = suggestion.city
+                                locationSearch.clear()
+                                isInputFieldFocused = false
+                            } label: {
+                                HStack(spacing: Spacing.sm) {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .foregroundStyle(Color.cmPrimaryLight)
+                                        .font(.system(size: 16))
+
+                                    Text(suggestion.fullName)
+                                        .font(.cmCallout)
+                                        .foregroundStyle(Color.cmTextPrimary)
+                                        .lineLimit(1)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, Spacing.sm)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.top, Spacing.sm)
+                }
+            }
         }
     }
     
