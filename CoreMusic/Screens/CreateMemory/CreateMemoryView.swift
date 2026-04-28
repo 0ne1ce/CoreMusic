@@ -220,6 +220,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
             )
             .textFieldStyle(.plain)
             .tint(.primarySecondaryCm)
+            .focused($isInputFieldFocused)
         }
     }
     

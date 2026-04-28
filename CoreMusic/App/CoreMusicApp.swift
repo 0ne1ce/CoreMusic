@@ -24,6 +24,7 @@ struct CoreMusicApp: App {
                     factories: deps.factories,
                     createMemoryFactory: deps.createMemoryFactory,
                     trackPlayerFactory: deps.trackPlayerFactory,
+                    memoryCarouselFactory: deps.memoryCarouselFactory,
                     playerService: deps.playerService
                 )
                 .environment(deps.appRouter)

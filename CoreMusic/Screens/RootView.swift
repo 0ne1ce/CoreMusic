@@ -6,6 +6,7 @@ struct RootView: View {
     let factories: RootScreenFactories
     let createMemoryFactory: CreateMemoryFactory
     let trackPlayerFactory: TrackPlayerFactory
+    let memoryCarouselFactory: MemoryCarouselFactory
     let playerService: PlayerServiceImpl
 
     // MARK: - Body
@@ -16,6 +17,7 @@ struct RootView: View {
                 factories: factories,
                 createMemoryFactory: createMemoryFactory,
                 trackPlayerFactory: trackPlayerFactory,
+                memoryCarouselFactory: memoryCarouselFactory,
                 playerService: playerService
             )
         }

@@ -31,7 +31,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
 
     // MARK: - Initializer
 
-    init(router: LibraryRouter, musicService: MusicService, playerService: PlayerService) {
+    init(router: LibraryRouter, musicService: any MusicService, playerService: PlayerService) {
         self.router = router
         self.musicService = musicService
         self.playerService = playerService

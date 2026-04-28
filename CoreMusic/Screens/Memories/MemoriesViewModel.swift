@@ -51,7 +51,7 @@ final class MemoriesViewModelImpl: MemoriesViewModel {
     }
 
     func onMemoryTap(_ memory: Memory) {
-        // TODO: open carousel (task 3)
+        router.openCarousel(startMemoryID: memory.id)
     }
 
     func onFavoriteTap(_ memory: Memory) {

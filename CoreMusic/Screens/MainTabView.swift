@@ -6,6 +6,7 @@ struct MainTabView: View {
     let factories: RootScreenFactories
     let createMemoryFactory: CreateMemoryFactory
     let trackPlayerFactory: TrackPlayerFactory
+    let memoryCarouselFactory: MemoryCarouselFactory
     @ObservedObject var playerService: PlayerServiceImpl
     
     @Environment(AppRouter.self) private var appRouter
@@ -84,6 +85,8 @@ struct MainTabView: View {
             createMemoryFactory.makeCreateMemoryScreen(songID: songID)
         case .player:
             trackPlayerFactory.makeTrackPlayerScreen()
+        case let .memoryCarousel(startMemoryID):
+            memoryCarouselFactory.makeMemoryCarouselScreen(startMemoryID: startMemoryID)
         }
     }
     

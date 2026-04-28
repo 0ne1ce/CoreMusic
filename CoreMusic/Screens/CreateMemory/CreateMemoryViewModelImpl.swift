@@ -16,7 +16,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
     @Published var memoryTitle = ""
     @Published var note = ""
     @Published var memoryDate = Date()
-    @Published var isDateEnabled = true
+    @Published var isDateEnabled = false
     @Published var isLocationEnabled = false
     @Published var locationName = ""
     @Published var tagInput = ""

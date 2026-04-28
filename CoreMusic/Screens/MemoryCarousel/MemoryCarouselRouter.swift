@@ -1,12 +1,12 @@
 import Foundation
 
 @MainActor
-protocol MemoriesRouter: AnyObject {
-    func openCarousel(startMemoryID: UUID)
+protocol MemoryCarouselRouter: AnyObject {
+    func close()
 }
 
 @MainActor
-final class MemoriesRouterImpl: MemoriesRouter {
+final class MemoryCarouselRouterImpl: MemoryCarouselRouter {
     // MARK: - Initializer
 
     init(appRouter: AppRouter) {
@@ -15,8 +15,8 @@ final class MemoriesRouterImpl: MemoriesRouter {
 
     // MARK: - Methods
 
-    func openCarousel(startMemoryID: UUID) {
-        appRouter.presentCover(.memoryCarousel(startMemoryID: startMemoryID))
+    func close() {
+        appRouter.dismissCover()
     }
 
     // MARK: - Private properties

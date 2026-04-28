@@ -93,7 +93,7 @@ fileprivate extension Song {
             title: self.title,
             artistName: self.artistName,
             artwork: self.artwork,
-            artworkURL: self.artwork?.url(width: 300, height: 300),
+            artworkURL: self.artwork?.url(width: 1024, height: 1024),
             libraryAddedDate: self.libraryAddedDate,
             durationSeconds: self.duration
         )

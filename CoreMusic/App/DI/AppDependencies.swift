@@ -13,6 +13,7 @@ struct AppDependencies {
     let memoryRepository: MemoryRepository
     let createMemoryFactory: CreateMemoryFactory
     let trackPlayerFactory: TrackPlayerFactory
+    let memoryCarouselFactory: MemoryCarouselFactory
     let factories: RootScreenFactories
 
     // MARK: - Public methods
@@ -37,6 +38,13 @@ struct AppDependencies {
                 playerService: playerService
             )
         )
+        let memoryCarouselFactory = MemoryCarouselFactory(
+            externalDeps: MemoryCarouselExternalDeps(
+                appRouter: appRouter,
+                memoryRepository: memoryRepository,
+                playerService: playerService
+            )
+        )
         let factories = AppDependencies.makeFactories(
             appRouter: appRouter,
             musicService: musicService,
@@ -52,6 +60,7 @@ struct AppDependencies {
             memoryRepository: memoryRepository,
             createMemoryFactory: createMemoryFactory,
             trackPlayerFactory: trackPlayerFactory,
+            memoryCarouselFactory: memoryCarouselFactory,
             factories: factories
         )
     }
@@ -76,6 +85,13 @@ struct AppDependencies {
                 playerService: playerService
             )
         )
+        let memoryCarouselFactory = MemoryCarouselFactory(
+            externalDeps: MemoryCarouselExternalDeps(
+                appRouter: appRouter,
+                memoryRepository: memoryRepository,
+                playerService: playerService
+            )
+        )
         let factories = AppDependencies.makeFactories(
             appRouter: appRouter,
             musicService: musicService,
@@ -91,6 +107,7 @@ struct AppDependencies {
             memoryRepository: memoryRepository,
             createMemoryFactory: createMemoryFactory,
             trackPlayerFactory: trackPlayerFactory,
+            memoryCarouselFactory: memoryCarouselFactory,
             factories: factories
         )
     }
