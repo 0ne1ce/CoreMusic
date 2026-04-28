@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 @MainActor
@@ -6,6 +7,8 @@ protocol CreateMemoryViewModel: ObservableObject {
 
     var navigationTitle: String { get }
     var selectedTrack: LibraryTrack? { get }
+    var selectedPhotoItem: PhotosPickerItem? { get set }
+    var selectedPhotoData: Data? { get }
     var memoryTitle: String { get set }
     var note: String { get set }
     var memoryDate: Date { get set }

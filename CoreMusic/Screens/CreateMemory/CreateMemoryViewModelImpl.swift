@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 import Combine
 
@@ -8,6 +9,10 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
 
     @Published var navigationTitle = "Новое воспоминание"
     @Published private(set) var selectedTrack: LibraryTrack?
+    @Published var selectedPhotoItem: PhotosPickerItem? {
+        didSet { loadPhotoData() }
+    }
+    @Published private(set) var selectedPhotoData: Data?
     @Published var memoryTitle = ""
     @Published var note = ""
     @Published var memoryDate = Date()
@@ -80,7 +85,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
                     note: note.trimmingCharacters(in: .whitespacesAndNewlines),
                     date: isDateEnabled ? memoryDate : Date(),
                     locationName: normalizedLocationName,
-                    photoData: nil,
+                    photoData: selectedPhotoData,
                     tags: tags,
                     isFavorite: isFavorite
                 )
@@ -126,6 +131,17 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
     private let memoryRepository: MemoryRepository
 
     // MARK: - Private methods
+
+    private func loadPhotoData() {
+        guard let item = selectedPhotoItem else {
+            selectedPhotoData = nil
+            return
+        }
+
+        Task {
+            selectedPhotoData = try? await item.loadTransferable(type: Data.self)
+        }
+    }
 
     private var normalizedLocationName: String? {
         guard isLocationEnabled else {

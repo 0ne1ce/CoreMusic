@@ -1,5 +1,5 @@
+import PhotosUI
 import SwiftUI
-
 import SwiftData
 
 struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
@@ -41,7 +41,8 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
             ToolbarItem(placement: .confirmationAction) {
                 Button(action: handleSaveTap) {
                     Image(systemName: "checkmark")
-                        .foregroundStyle(Color.cmTextPrimary)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(viewModel.canSave ? .success : Color.cmTextSecondary.opacity(0.4))
                 }
                 .disabled(!viewModel.canSave)
             }
@@ -74,15 +75,31 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 .font(.cmSecondary)
                 .foregroundStyle(Color.cmTextSecondary)
 
-            Button(action: { }) {
-                RoundedRectangle(cornerRadius: Layout.photoCornerRadius)
-                    .fill(Color.cmBackgroundLight)
-                    .frame(width: Layout.photoSize, height: Layout.photoSize)
-                    .overlay {
-                        Image(systemName: "plus")
-                            .font(.system(size: 26, weight: .regular))
-                            .foregroundStyle(Color.cmTextSecondary)
-                    }
+            PhotosPicker(
+                selection: Binding(
+                    get: { viewModel.selectedPhotoItem },
+                    set: { viewModel.selectedPhotoItem = $0 }
+                ),
+                matching: .images
+            ) {
+                if let photoData = viewModel.selectedPhotoData,
+                   let uiImage = UIImage(data: photoData) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: Layout.photoSize, height: Layout.photoSize)
+                        .clipShape(RoundedRectangle(cornerRadius: Layout.photoCornerRadius))
+                }
+                else {
+                    RoundedRectangle(cornerRadius: Layout.photoCornerRadius)
+                        .fill(Color.cmBackgroundLight)
+                        .frame(width: Layout.photoSize, height: Layout.photoSize)
+                        .overlay {
+                            Image(systemName: "plus")
+                                .font(.system(size: 26, weight: .regular))
+                                .foregroundStyle(Color.cmTextSecondary)
+                        }
+                }
             }
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity)
