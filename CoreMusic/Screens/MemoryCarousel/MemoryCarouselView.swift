@@ -18,6 +18,15 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
                 carouselView
                 topBar
             }
+
+            if let galleryImage {
+                PhotoGalleryView(image: galleryImage) {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        self.galleryImage = nil
+                    }
+                }
+                .zIndex(1)
+            }
         }
         .statusBarHidden()
     }
@@ -32,6 +41,7 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
 
     @StateObject private var viewModel: ViewModel
     @State private var isScrollReady = false
+    @State private var galleryImage: UIImage?
 
     private var carouselView: some View {
         ScrollViewReader { proxy in
@@ -103,6 +113,7 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
             .aspectRatio(Layout.photoAspectRatio, contentMode: .fit)
             .background { heroContent(for: memory, parallaxAmount: parallaxAmount) }
             .clipped()
+            .onTapGesture { openGallery(for: memory) }
     }
 
     @ViewBuilder
@@ -277,6 +288,24 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
     private var currentMemory: Memory? {
         guard viewModel.currentIndex < viewModel.memories.count else { return nil }
         return viewModel.memories[viewModel.currentIndex]
+    }
+
+    private func openGallery(for memory: Memory) {
+        if let cached = viewModel.heroImage(for: memory) {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                galleryImage = cached
+            }
+        }
+        else if let urlString = memory.trackArtworkURLString,
+                let url = URL(string: urlString) {
+            Task {
+                guard let (data, _) = try? await URLSession.shared.data(from: url),
+                      let image = UIImage(data: data) else { return }
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    galleryImage = image
+                }
+            }
+        }
     }
 }
 
