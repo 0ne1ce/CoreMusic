@@ -6,6 +6,7 @@ protocol CreateMemoryViewModel: ObservableObject {
     // MARK: - Properties
 
     var navigationTitle: String { get }
+    var isEditMode: Bool { get }
     var selectedTrack: LibraryTrack? { get }
     var selectedPhotoItem: PhotosPickerItem? { get set }
     var selectedPhotoData: Data? { get }
@@ -19,6 +20,7 @@ protocol CreateMemoryViewModel: ObservableObject {
     var tags: [String] { get }
     var isFavorite: Bool { get set }
     var isSaving: Bool { get }
+    var showDeleteConfirmation: Bool { get set }
     var errorMessage: String? { get }
     var canSave: Bool { get }
 
@@ -27,6 +29,8 @@ protocol CreateMemoryViewModel: ObservableObject {
     func onAppear()
     func onCloseTap()
     func onSaveTap() async
+    func onDeleteTap()
+    func confirmDelete()
     func onAddTagTap()
     func onRemoveTagTap(_ tag: String)
     func dismissError()

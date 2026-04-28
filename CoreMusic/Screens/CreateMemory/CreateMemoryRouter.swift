@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol CreateMemoryRouter: AnyObject {
     func close()
+    func dismissAll()
 }
 
 @MainActor
@@ -17,6 +18,10 @@ final class CreateMemoryRouterImpl: CreateMemoryRouter {
 
     func close() {
         appRouter.closeCurrent()
+    }
+
+    func dismissAll() {
+        appRouter.dismissCover()
     }
 
     // MARK: - Private properties

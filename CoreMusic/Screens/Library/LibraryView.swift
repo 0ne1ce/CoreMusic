@@ -119,7 +119,7 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
                                 Image(systemName: "plus")
                             }
                             .labelStyle(.iconOnly)
-                            .tint(Color.cmPrimarySecondary)
+                            .tint(Color.cmPrimaryLight)
                         }
                 }
             }

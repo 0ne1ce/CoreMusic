@@ -19,7 +19,6 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
                 topBar
             }
         }
-        .preferredColorScheme(.dark)
         .statusBarHidden()
     }
 
@@ -88,7 +87,7 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: Layout.cardCornerRadius)
-                    .fill(Color.cmPrimarySecondary.opacity(0.15))
+                    .fill(Color.cmPrimaryLight.opacity(0.15))
             )
             .clipShape(RoundedRectangle(cornerRadius: Layout.cardCornerRadius))
 
@@ -141,7 +140,7 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
 
     private var heroPlaceholder: some View {
         LinearGradient(
-            colors: [Color.cmPrimarySecondary, Color.cmPrimary],
+            colors: [Color.cmPrimaryLight, Color.cmPrimary],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -177,12 +176,13 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
             TrackCardView(model: viewModel.trackCardModel(for: memory))
         }
         .buttonStyle(.plain)
+        .preferredColorScheme(.dark)
     }
 
     private func noteSection(for memory: Memory) -> some View {
         HStack(alignment: .top, spacing: Spacing.md) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(Color.cmPrimarySecondary)
+                .fill(Color.cmPrimaryLight)
                 .frame(width: 3)
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -251,11 +251,32 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
 
             Spacer()
 
-            Color.clear
-                .frame(width: Layout.closeButtonSize, height: Layout.closeButtonSize)
+            if let currentMemory {
+                editButton(for: currentMemory)
+            }
+            else {
+                Color.clear
+                    .frame(width: Layout.editButtonSize, height: Layout.editButtonSize)
+            }
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.sm)
+    }
+
+    private func editButton(for memory: Memory) -> some View {
+        Button { viewModel.onEditTap(memory) } label: {
+            Image(systemName: "pencil")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: Layout.editButtonSize, height: Layout.editButtonSize)
+                .background(Color.cmPrimaryLight)
+                .clipShape(Circle())
+        }
+    }
+
+    private var currentMemory: Memory? {
+        guard viewModel.currentIndex < viewModel.memories.count else { return nil }
+        return viewModel.memories[viewModel.currentIndex]
     }
 }
 
@@ -271,4 +292,5 @@ private enum Layout {
     static let parallaxOffset: CGFloat = 80
     static let placeholderIconSize: CGFloat = 48
     static let closeButtonSize: CGFloat = 32
+    static let editButtonSize: CGFloat = 32
 }

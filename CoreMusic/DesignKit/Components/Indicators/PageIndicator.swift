@@ -9,7 +9,7 @@ struct PageIndicator: View {
             ForEach(0..<count, id: \.self) { pageIndex in
                 Capsule()
                     .fill(pageIndex == currentIndex 
-                          ? Color.cmPrimarySecondary
+                          ? Color.cmPrimaryLight
                           : Color.cmTextSecondary
                     )
                     .frame(

@@ -19,6 +19,15 @@ final class SwiftDataMemoryRepository: MemoryRepository {
         return try context.fetch(descriptor)
     }
 
+    func fetchMemory(by id: UUID) throws -> Memory? {
+        let targetID = id
+        var descriptor = FetchDescriptor<Memory>(
+            predicate: #Predicate<Memory> { $0.id == targetID }
+        )
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
     func saveMemory(_ draft: MemoryDraft) throws {
         let memory = Memory(
             songID: draft.songID,
@@ -35,6 +44,17 @@ final class SwiftDataMemoryRepository: MemoryRepository {
         )
 
         context.insert(memory)
+        try context.save()
+    }
+
+    func updateMemory(_ memory: Memory, with draft: MemoryDraft) throws {
+        memory.memoryTitle = draft.memoryTitle
+        memory.note = draft.note
+        memory.date = draft.date
+        memory.locationName = draft.locationName
+        memory.photoData = draft.photoData
+        memory.tagsStorage = draft.tags.joined(separator: "|")
+        memory.isFavorite = draft.isFavorite
         try context.save()
     }
 

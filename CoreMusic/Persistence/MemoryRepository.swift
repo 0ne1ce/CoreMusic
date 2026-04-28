@@ -3,7 +3,9 @@ import Foundation
 @MainActor
 protocol MemoryRepository: AnyObject {
     func fetchMemories() throws -> [Memory]
+    func fetchMemory(by id: UUID) throws -> Memory?
     func saveMemory(_ draft: MemoryDraft) throws
+    func updateMemory(_ memory: Memory, with draft: MemoryDraft) throws
     func deleteMemory(_ memory: Memory) throws
     func toggleFavorite(_ memory: Memory) throws
 }

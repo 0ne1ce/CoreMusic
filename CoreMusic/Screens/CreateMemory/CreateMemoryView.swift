@@ -20,7 +20,13 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                         .foregroundStyle(Color.cmDanger)
                 }
 
-                saveButton
+                VStack(spacing: Spacing.sm) {
+                    saveButton
+
+                    if viewModel.isEditMode {
+                        deleteButton
+                    }
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Spacing.xl)
@@ -46,6 +52,20 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 }
                 .disabled(!viewModel.canSave)
             }
+        }
+        .alert(
+            "Удалить воспоминание?",
+            isPresented: Binding(
+                get: { viewModel.showDeleteConfirmation },
+                set: { viewModel.showDeleteConfirmation = $0 }
+            )
+        ) {
+            Button("Отмена", role: .cancel) {}
+            Button("Удалить", role: .destructive) {
+                viewModel.confirmDelete()
+            }
+        } message: {
+            Text("Это действие нельзя отменить.")
         }
         .onAppear {
             viewModel.onAppear()
@@ -126,7 +146,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
             )
             .textFieldStyle(.plain)
             .font(.cmMemoryTitle)
-            .tint(.primarySecondaryCm)
+            .tint(.primaryLightCm)
             .focused($isInputFieldFocused)
 
 //            Text("Заметка (необязательно)")
@@ -142,7 +162,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
             )
             .textFieldStyle(.plain)
             .font(.cmCardTitle)
-            .tint(.primarySecondaryCm)
+            .tint(.primaryLightCm)
             .focused($isInputFieldFocused)
         }
     }
@@ -219,7 +239,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 )
             )
             .textFieldStyle(.plain)
-            .tint(.primarySecondaryCm)
+            .tint(.primaryLightCm)
             .focused($isInputFieldFocused)
         }
     }
@@ -279,7 +299,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 .background(Color.cmBackgroundLight)
                 .cornerRadius(12)
                 .focused($isInputFieldFocused)
-                .tint(Color.cmPrimarySecondary)
+                .tint(Color.cmPrimaryLight)
 
                 Button(action: handleAddTagTap) {
                     Text("+ Добавить")
@@ -287,7 +307,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, Spacing.lg)
                         .padding(.vertical, Spacing.md)
-                        .background(Color.cmPrimarySecondary)
+                        .background(Color.cmPrimaryLight)
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -339,12 +359,25 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                     .tint(.white)
             }
             else {
-                Text("Сохранить воспоминание")
+                Text(viewModel.isEditMode ? "Сохранить изменения" : "Сохранить воспоминание")
             }
         }
         .buttonStyle(PrimaryButtonStyle())
         .disabled(!viewModel.canSave)
-        .padding(.top, Spacing.sm)
+    }
+
+    private var deleteButton: some View {
+        Button(action: { viewModel.onDeleteTap() }) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "trash")
+                Text("Удалить воспоминание")
+            }
+            .font(.cmBody.weight(.medium))
+            .foregroundStyle(.danger)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.md)
+        }
+        .buttonStyle(.plain)
     }
 
     private func handleSaveTap() {

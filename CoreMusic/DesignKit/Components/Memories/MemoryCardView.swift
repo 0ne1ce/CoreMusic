@@ -56,7 +56,7 @@ struct MemoryCardView: View {
 
     private var placeholderView: some View {
         LinearGradient(
-            colors: [Color.cmPrimarySecondary, Color.cmPrimary],
+            colors: [Color.cmPrimaryLight, Color.cmPrimary],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )

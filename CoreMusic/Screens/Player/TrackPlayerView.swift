@@ -28,7 +28,7 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
                     Image(systemName: "xmark")
                         .foregroundStyle(Color.cmTextPrimary)
                         .frame(width: Layout.closeButtonSize, height: Layout.closeButtonSize)
-                        .background(Color.cmPrimarySecondary.opacity(0.15))
+                        .background(Color.cmPrimaryLight.opacity(0.15))
                         .clipShape(Circle())
                 }
             }

@@ -1,10 +1,6 @@
 import SwiftUI
 
 struct MemoriesView<ViewModel: MemoriesViewModel>: View {
-    // MARK: - Properties
-
-    @StateObject private var viewModel: ViewModel
-
     // MARK: - Body
 
     var body: some View {
@@ -15,6 +11,12 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
             .onAppear {
                 viewModel.onAppear()
             }
+            // @0ne1ce: trick to update memories after deletion of memory in CreateMemoryScreen
+            .onChange(of: appRouter.presentedCover) { _, newValue in
+                if newValue == nil {
+                    viewModel.onAppear()
+                }
+            }
     }
 
     // MARK: - Initializer
@@ -24,6 +26,9 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
     }
 
     // MARK: - Private properties
+
+    @StateObject private var viewModel: ViewModel
+    @Environment(AppRouter.self) private var appRouter
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.sm),
@@ -63,38 +68,45 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
 
     private var memoriesGridView: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(Array(viewModel.memories.enumerated()), id: \.offset) { index, memory in
-                    Button {
-                        viewModel.onMemoryTap(memory)
-                    } label: {
-                        MemoryCardView(
-                            memory: memory,
-                            onFavoriteTap: { viewModel.onFavoriteTap(memory) }
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .contextMenu {
+            VStack(spacing: .zero) {
+                LazyVGrid(columns: columns, spacing: Spacing.sm) {
+                    ForEach(Array(viewModel.memories.enumerated()), id: \.offset) { index, memory in
                         Button {
-                            viewModel.onFavoriteTap(memory)
+                            viewModel.onMemoryTap(memory)
                         } label: {
-                            Label(
-                                memory.isFavorite ? "Убрать из избранного" : "В избранное",
-                                systemImage: memory.isFavorite ? "heart.slash" : "heart"
+                            MemoryCardView(
+                                memory: memory,
+                                onFavoriteTap: { viewModel.onFavoriteTap(memory) }
                             )
                         }
+                        .buttonStyle(.plain)
+                        .contextMenu {
+                            Button {
+                                viewModel.onFavoriteTap(memory)
+                            } label: {
+                                Label(
+                                    memory.isFavorite ? "Убрать из избранного" : "В избранное",
+                                    systemImage: memory.isFavorite ? "heart.slash" : "heart"
+                                )
+                            }
 
-                        Button(role: .destructive) {
-                            viewModel.onDeleteTap(memory)
-                        } label: {
-                            Label("Удалить", systemImage: "trash")
+                            Button(role: .destructive) {
+                                viewModel.onDeleteTap(memory)
+                            } label: {
+                                Label("Удалить", systemImage: "trash")
+                            }
                         }
+                        .zIndex(Double(index))
                     }
-                    .zIndex(Double(index))
                 }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.sm)
+
+                // @0ne1ce: adding extra space in the bottom of ScrollView, because mini player isn't in .safeAreaInset(.bottom, ...)
+                Rectangle()
+                    .fill(.clear)
+                    .frame(height: 80)
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.top, Spacing.sm)
         }
         .scrollContentBackground(.hidden)
         .background(Color.cmBackgroundPrimary)

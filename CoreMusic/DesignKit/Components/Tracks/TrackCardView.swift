@@ -172,7 +172,7 @@ struct TrackCardView: View {
         case .idle:
             return .cmBackgroundLight
         case .playing:
-            return .cmPrimarySecondary.opacity(0.12)
+            return .cmPrimaryLight.opacity(0.12)
         case .paused:
             return .cmBackgroundLight
         }
@@ -181,7 +181,7 @@ struct TrackCardView: View {
     private var titleColor: Color {
         switch model.playbackState {
         case .playing:
-            return .cmPrimarySecondary
+            return .cmPrimaryLight
         case .idle, .paused:
             return .cmTextPrimary
         }
@@ -202,7 +202,7 @@ struct TrackCardView: View {
             .font(.system(size: Layout.MemoryButton.iconSize, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: Layout.MemoryButton.size, height: Layout.MemoryButton.size)
-            .background(Color.cmPrimarySecondary)
+            .background(Color.cmPrimaryLight)
             .clipShape(RoundedRectangle(cornerRadius: Layout.MemoryButton.cornerRadius))
             .padding(.trailing, Spacing.sm)
             .opacity(isRevealed ? 1 : 0)

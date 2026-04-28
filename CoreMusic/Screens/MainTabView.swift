@@ -28,7 +28,7 @@ struct MainTabView: View {
                     .tabItem { Label("Воспоминания", systemImage: "greetingcard") }
                     .tag(AppRouter.Tab.memories)
             }
-            .tint(.cmPrimarySecondary)
+            .tint(.cmPrimaryLight)
 
             if let currentTrack = playerService.currentTrack {
                 MiniPlayerView(
@@ -72,10 +72,7 @@ struct MainTabView: View {
 
     @ViewBuilder
     private func destination(for route: AppPushRoute) -> some View {
-        switch route {
-        case let .createMemory(songID):
-            createMemoryFactory.makeCreateMemoryScreen(songID: songID)
-        }
+        EmptyView()
     }
 
     @ViewBuilder
@@ -83,6 +80,8 @@ struct MainTabView: View {
         switch cover {
         case let .createMemory(songID):
             createMemoryFactory.makeCreateMemoryScreen(songID: songID)
+        case let .editMemory(memoryID):
+            createMemoryFactory.makeEditMemoryScreen(memoryID: memoryID)
         case .player:
             trackPlayerFactory.makeTrackPlayerScreen()
         case let .memoryCarousel(startMemoryID):

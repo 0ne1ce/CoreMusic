@@ -20,4 +20,19 @@ struct CreateMemoryFactory {
 
         return CreateMemoryView(viewModel: viewModel)
     }
+
+    func makeEditMemoryScreen(memoryID: UUID) -> some View {
+        let router = CreateMemoryRouterImpl(appRouter: externalDeps.appRouter)
+        let memory = try? externalDeps.memoryRepository.fetchMemory(by: memoryID)
+        let viewModel = CreateMemoryViewModelImpl(
+            router: router,
+            songID: memory?.songID ?? "",
+            musicService: externalDeps.musicService,
+            playerService: externalDeps.playerService,
+            memoryRepository: externalDeps.memoryRepository,
+            editingMemory: memory
+        )
+
+        return CreateMemoryView(viewModel: viewModel)
+    }
 }

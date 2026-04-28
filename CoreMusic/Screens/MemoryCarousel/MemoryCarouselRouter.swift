@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 protocol MemoryCarouselRouter: AnyObject {
     func close()
+    func openEdit(memoryID: UUID)
 }
 
 @MainActor
@@ -17,6 +18,10 @@ final class MemoryCarouselRouterImpl: MemoryCarouselRouter {
 
     func close() {
         appRouter.dismissCover()
+    }
+
+    func openEdit(memoryID: UUID) {
+        appRouter.presentCover(.editMemory(memoryID: memoryID))
     }
 
     // MARK: - Private properties

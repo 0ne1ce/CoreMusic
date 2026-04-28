@@ -4,7 +4,7 @@ import SwiftUI
 
 extension Color {
     static let cmPrimary = Color("PrimaryCm")
-    static let cmPrimarySecondary = Color("PrimarySecondaryCm")
+    static let cmPrimaryLight = Color("PrimaryLightCm")
 
     static let cmAppleMusic = Color("AppleMusic")
 

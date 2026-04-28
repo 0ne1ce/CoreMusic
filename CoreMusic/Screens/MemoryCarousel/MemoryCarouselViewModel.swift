@@ -13,6 +13,7 @@ protocol MemoryCarouselViewModel: ObservableObject {
     // MARK: - Methods
 
     func onClose()
+    func onEditTap(_ memory: Memory)
     func onFavoriteTap(_ memory: Memory)
     func onDeleteTap(_ memory: Memory)
     func onPlayTap(_ memory: Memory)
@@ -62,6 +63,10 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
 
     func onClose() {
         router.close()
+    }
+
+    func onEditTap(_ memory: Memory) {
+        router.openEdit(memoryID: memory.id)
     }
 
     func onFavoriteTap(_ memory: Memory) {
