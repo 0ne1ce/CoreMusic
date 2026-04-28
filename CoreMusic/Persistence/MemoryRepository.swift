@@ -5,6 +5,7 @@ protocol MemoryRepository: AnyObject {
     func fetchMemories() throws -> [Memory]
     func saveMemory(_ draft: MemoryDraft) throws
     func deleteMemory(_ memory: Memory) throws
+    func toggleFavorite(_ memory: Memory) throws
 }
 
 struct MemoryDraft {

@@ -15,6 +15,8 @@ protocol MemoriesViewModel: ObservableObject {
 
     func onAppear()
     func retry()
+    func onMemoryTap(_ memory: Memory)
+    func onFavoriteTap(_ memory: Memory)
     func onDeleteTap(_ memory: Memory)
 }
 
@@ -48,10 +50,25 @@ final class MemoriesViewModelImpl: MemoriesViewModel {
         loadMemories()
     }
 
+    func onMemoryTap(_ memory: Memory) {
+        // TODO: open carousel (task 3)
+    }
+
+    func onFavoriteTap(_ memory: Memory) {
+        do {
+            try memoryRepository.toggleFavorite(memory)
+        }
+        catch {
+            errorMessage = "Не удалось обновить воспоминание."
+        }
+    }
+
     func onDeleteTap(_ memory: Memory) {
         do {
             try memoryRepository.deleteMemory(memory)
-            memories.removeAll { $0.id == memory.id }
+            withAnimation {
+                memories.removeAll { $0.id == memory.id }
+            }
         }
         catch {
             errorMessage = "Не удалось удалить воспоминание."

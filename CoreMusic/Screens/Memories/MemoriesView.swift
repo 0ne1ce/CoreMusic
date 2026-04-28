@@ -11,8 +11,6 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
         contentView
             .navigationTitle(viewModel.title)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .padding(.horizontal, Spacing.xl)
-            .padding(.top, Spacing.lg)
             .background(Color.cmBackgroundPrimary)
             .onAppear {
                 viewModel.onAppear()
@@ -24,6 +22,13 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
     init(viewModel: ViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
+
+    // MARK: - Private properties
+
+    private let columns = [
+        GridItem(.flexible(), spacing: Spacing.sm),
+        GridItem(.flexible(), spacing: Spacing.sm)
+    ]
 
     // MARK: - Private methods
 
@@ -52,32 +57,46 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
             )
         }
         else {
-            List {
-                ForEach(viewModel.memories) { memory in
-                    MemoryListItemView(memory: memory)
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: Spacing.xs,
-                                leading: .zero,
-                                bottom: .zero,
-                                trailing: .zero
-                            )
+            memoriesGridView
+        }
+    }
+
+    private var memoriesGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: Spacing.sm) {
+                ForEach(Array(viewModel.memories.enumerated()), id: \.offset) { index, memory in
+                    Button {
+                        viewModel.onMemoryTap(memory)
+                    } label: {
+                        MemoryCardView(
+                            memory: memory,
+                            onFavoriteTap: { viewModel.onFavoriteTap(memory) }
                         )
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                viewModel.onDeleteTap(memory)
-                            } label: {
-                                Label("Удалить", systemImage: "trash")
-                                    .tint(.danger)
-                            }
+                    }
+                    .buttonStyle(.plain)
+                    .contextMenu {
+                        Button {
+                            viewModel.onFavoriteTap(memory)
+                        } label: {
+                            Label(
+                                memory.isFavorite ? "Убрать из избранного" : "В избранное",
+                                systemImage: memory.isFavorite ? "heart.slash" : "heart"
+                            )
                         }
+
+                        Button(role: .destructive) {
+                            viewModel.onDeleteTap(memory)
+                        } label: {
+                            Label("Удалить", systemImage: "trash")
+                        }
+                    }
+                    .zIndex(Double(index))
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .background(Color.cmBackgroundPrimary)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.top, Spacing.sm)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.cmBackgroundPrimary)
     }
 }

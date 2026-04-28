@@ -82,27 +82,32 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 ),
                 matching: .images
             ) {
-                if let photoData = viewModel.selectedPhotoData,
-                   let uiImage = UIImage(data: photoData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: Layout.photoSize, height: Layout.photoSize)
-                        .clipShape(RoundedRectangle(cornerRadius: Layout.photoCornerRadius))
-                }
-                else {
-                    RoundedRectangle(cornerRadius: Layout.photoCornerRadius)
-                        .fill(Color.cmBackgroundLight)
-                        .frame(width: Layout.photoSize, height: Layout.photoSize)
-                        .overlay {
-                            Image(systemName: "plus")
-                                .font(.system(size: 26, weight: .regular))
-                                .foregroundStyle(Color.cmTextSecondary)
-                        }
-                }
+                photoPreviewLabel
             }
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private var photoPreviewLabel: some View {
+        if let photoData = viewModel.selectedPhotoData,
+           let uiImage = UIImage(data: photoData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: Layout.photoSize, height: Layout.photoSize)
+                .clipShape(RoundedRectangle(cornerRadius: Layout.photoCornerRadius))
+        }
+        else {
+            RoundedRectangle(cornerRadius: Layout.photoCornerRadius)
+                .fill(Color.cmBackgroundLight)
+                .frame(width: Layout.photoSize, height: Layout.photoSize)
+                .overlay {
+                    Image(systemName: "plus")
+                        .font(.system(size: 26, weight: .regular))
+                        .foregroundStyle(Color.cmTextSecondary)
+                }
         }
     }
 
@@ -202,7 +207,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 )
             )
             .labelsHidden()
-            .tint(Color.cmSuccess)
+            .tint(.success)
         }
 
         if viewModel.isLocationEnabled {
@@ -235,7 +240,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 )
             )
             .labelsHidden()
-            .tint(Color.cmSuccess)
+            .tint(.success)
         }
 
         if viewModel.isDateEnabled {

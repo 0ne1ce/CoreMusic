@@ -43,6 +43,11 @@ final class SwiftDataMemoryRepository: MemoryRepository {
         try context.save()
     }
 
+    func toggleFavorite(_ memory: Memory) throws {
+        memory.isFavorite.toggle()
+        try context.save()
+    }
+
     // MARK: - Private properties
 
     private let modelContainer: ModelContainer
