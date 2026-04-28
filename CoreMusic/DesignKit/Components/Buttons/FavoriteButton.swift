@@ -11,7 +11,7 @@ struct FavoriteButton: View {
         } label: {
             Image(systemName: isFavorite ? "heart.fill" : "heart")
                 .font(.system(size: size, weight: .semibold))
-                .foregroundStyle(isFavorite ? Color.cmFavorite : .white)
+                .foregroundStyle(isFavorite ? .favorite : .white)
                 .frame(width: size, height: size)
                 .contentShape(Rectangle())
                 .symbolEffect(.bounce.down, options: .speed(2), value: isFavorite)
