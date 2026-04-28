@@ -16,7 +16,7 @@ final class MemoriesRouterImpl: MemoriesRouter {
     // MARK: - Methods
 
     func openCarousel(startMemoryID: UUID) {
-        appRouter.presentCover(.memoryCarousel(startMemoryID: startMemoryID))
+        appRouter.presentCover(.memoryCarousel(startMemoryID: startMemoryID, memoryIDs: nil))
     }
 
     // MARK: - Private properties

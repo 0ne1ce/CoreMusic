@@ -84,8 +84,8 @@ struct MainTabView: View {
             createMemoryFactory.makeEditMemoryScreen(memoryID: memoryID)
         case .player:
             trackPlayerFactory.makeTrackPlayerScreen()
-        case let .memoryCarousel(startMemoryID):
-            memoryCarouselFactory.makeMemoryCarouselScreen(startMemoryID: startMemoryID)
+        case let .memoryCarousel(startMemoryID, memoryIDs):
+            memoryCarouselFactory.makeMemoryCarouselScreen(startMemoryID: startMemoryID, memoryIDs: memoryIDs)
         }
     }
     

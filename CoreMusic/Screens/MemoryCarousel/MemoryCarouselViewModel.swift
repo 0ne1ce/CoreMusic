@@ -40,11 +40,13 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
 
     init(
         startMemoryID: UUID,
+        memoryIDs: [UUID]?,
         router: MemoryCarouselRouter,
         memoryRepository: MemoryRepository,
         playerService: PlayerServiceImpl
     ) {
         self.startMemoryID = startMemoryID
+        self.memoryIDs = memoryIDs
         self.router = router
         self.memoryRepository = memoryRepository
         self.playerService = playerService
@@ -132,6 +134,7 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
     // MARK: - Private properties
 
     private let startMemoryID: UUID
+    private let memoryIDs: [UUID]?
     private let router: MemoryCarouselRouter
     private let memoryRepository: MemoryRepository
     private let playerService: PlayerServiceImpl
@@ -149,7 +152,12 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
 
     private func loadMemories() {
         do {
-            memories = try memoryRepository.fetchMemories()
+            var allMemories = try memoryRepository.fetchMemories()
+            if let ids = memoryIDs {
+                let idSet = Set(ids)
+                allMemories = allMemories.filter { idSet.contains($0.id) }
+            }
+            memories = allMemories
             prepareHeroImages()
             currentMemoryID = startMemoryID
         }

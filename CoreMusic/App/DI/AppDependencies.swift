@@ -122,7 +122,12 @@ struct AppDependencies {
     ) -> RootScreenFactories {
         RootScreenFactories(
             homeFactory: HomeFactory(
-                externalDeps: HomeExternalDeps(appRouter: appRouter)
+                externalDeps: HomeExternalDeps(
+                    appRouter: appRouter,
+                    musicService: musicService,
+                    playerService: playerService,
+                    memoryRepository: memoryRepository
+                )
             ),
             libraryFactory: LibraryFactory(
                 externalDeps: LibraryExternalDeps(

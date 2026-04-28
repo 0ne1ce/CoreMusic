@@ -8,10 +8,11 @@ struct MemoryCarouselFactory {
 
     // MARK: - Methods
 
-    func makeMemoryCarouselScreen(startMemoryID: UUID) -> some View {
+    func makeMemoryCarouselScreen(startMemoryID: UUID, memoryIDs: [UUID]? = nil) -> some View {
         let router = MemoryCarouselRouterImpl(appRouter: externalDeps.appRouter)
         let viewModel = MemoryCarouselViewModelImpl(
             startMemoryID: startMemoryID,
+            memoryIDs: memoryIDs,
             router: router,
             memoryRepository: externalDeps.memoryRepository,
             playerService: externalDeps.playerService
