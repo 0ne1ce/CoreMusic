@@ -16,7 +16,9 @@ protocol LibraryViewModel: ObservableObject {
     func onSceneDidBecomeActive() async
     func retry() async
     func openSettings()
+    func onTrackTap(_ track: LibraryTrack, queueTracks: [LibraryTrack]) async
     func onTrackAddTap(_ track: LibraryTrack)
+    func playbackState(for trackID: String) -> TrackCardModel.PlaybackState
 }
 
 @MainActor
@@ -29,9 +31,10 @@ final class LibraryViewModelImpl: LibraryViewModel {
 
     // MARK: - Initializer
 
-    init(router: any LibraryRouter, musicService: any MusicService) {
+    init(router: LibraryRouter, musicService: MusicService, playerService: PlayerService) {
         self.router = router
         self.musicService = musicService
+        self.playerService = playerService
     }
 
     // MARK: - Public methods
@@ -65,14 +68,23 @@ final class LibraryViewModelImpl: LibraryViewModel {
         UIApplication.shared.open(url)
     }
 
+    func onTrackTap(_ track: LibraryTrack, queueTracks: [LibraryTrack]) async {
+        await playerService.play(track: track, queue: queueTracks)
+    }
+
     func onTrackAddTap(_ track: LibraryTrack) {
         router.goToCreateMemory(songID: track.id)
     }
 
+    func playbackState(for trackID: String) -> TrackCardModel.PlaybackState {
+        playerService.playbackState(for: trackID)
+    }
+
     // MARK: - Private properties
 
-    private let router: any LibraryRouter
+    private let router: LibraryRouter
     private let musicService: any MusicService
+    private let playerService: PlayerService
     private let log = Logger(subsystem: "com.coremusic.app", category: "LibraryViewModel")
     private var fullSectionsTask: Task<Void, Never>?
     private var isLoadInProgress = false

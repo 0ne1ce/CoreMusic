@@ -2,20 +2,26 @@ import Foundation
 import MusicKit
 
 struct TrackCardModel: Equatable, Identifiable {
+    enum PlaybackState: Equatable {
+        case idle
+        case playing
+        case paused
+    }
+
     let id: String
     let title: String
     let artist: String
     let artwork: Artwork?
     let artworkURL: URL?
-    var isPlaying: Bool = false
+    var playbackState: PlaybackState = .idle
 
-    init(track: LibraryTrack, isPlaying: Bool = false) {
+    init(track: LibraryTrack, playbackState: PlaybackState = .idle) {
         self.id = track.id
         self.title = track.title
         self.artist = track.artistName
         self.artwork = track.artwork
         self.artworkURL = track.artworkURL
-        self.isPlaying = isPlaying
+        self.playbackState = playbackState
     }
 }
 
@@ -25,6 +31,6 @@ extension TrackCardModel {
         lhs.title == rhs.title &&
         lhs.artist == rhs.artist &&
         lhs.artworkURL == rhs.artworkURL &&
-        lhs.isPlaying == rhs.isPlaying
+        lhs.playbackState == rhs.playbackState
     }
 }

@@ -30,6 +30,14 @@ final class MockMusicService: MusicService {
         return tracks
     }
 
+    func song(for trackID: String) async throws -> Song? {
+        nil
+    }
+
+    func cachedTrack(for trackID: String) -> LibraryTrack? {
+        tracks.first { $0.id == trackID }
+    }
+
     // MARK: - Private properties
 
     private let tracks: [LibraryTrack]

@@ -38,15 +38,50 @@ final class MusicServiceImpl: MusicService {
         let tracks = await Task.detached(priority: .userInitiated) {
             songs.map { $0.toLibraryTrack() }
         }.value
+        cacheLibraryData(songs: songs, tracks: tracks)
         let tracksWithArtwork = tracks.filter { $0.artwork != nil || $0.artworkURL != nil }.count
         log.info("Fetched \(tracks.count) songs from library")
         log.info("Tracks with artwork available: \(tracksWithArtwork)")
         return tracks
     }
 
+    func song(for trackID: String) async throws -> Song? {
+        if let cachedSong = songCache[trackID] {
+            return cachedSong
+        }
+
+        var request = MusicLibraryRequest<Song>()
+        request.filter(matching: \.id, equalTo: MusicItemID(trackID))
+        request.limit = 1
+        let response = try await request.response()
+        guard let song = response.items.first else {
+            return nil
+        }
+
+        let track = song.toLibraryTrack()
+        songCache[trackID] = song
+        trackCache[trackID] = track
+        return song
+    }
+
+    func cachedTrack(for trackID: String) -> LibraryTrack? {
+        trackCache[trackID]
+    }
+
     // MARK: - Private properties
 
     private let log = Logger(subsystem: "com.coremusic.app", category: "MusicService")
+    private var songCache: [String: Song] = [:]
+    private var trackCache: [String: LibraryTrack] = [:]
+
+    // MARK: - Private methods
+
+    private func cacheLibraryData(songs: [Song], tracks: [LibraryTrack]) {
+        for (song, track) in zip(songs, tracks) {
+            songCache[track.id] = song
+            trackCache[track.id] = track
+        }
+    }
 }
 
 // MARK: - Mapping

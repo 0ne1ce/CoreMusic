@@ -66,7 +66,7 @@ struct TrackCardView: View {
         .frame(height: Layout.Card.height)
         .background(
             RoundedRectangle(cornerRadius: Layout.Card.cornerRadius)
-                .fill(model.isPlaying ? Color.cmPrimarySecondary.opacity(0.1) : Color.cmBackgroundLight)
+                .fill(cardBackgroundColor)
         )
         .contentShape(Rectangle())
     }
@@ -112,7 +112,7 @@ struct TrackCardView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.cmCardTitle)
-                .foregroundStyle(model.isPlaying ? Color.cmPrimarySecondary : Color.cmTextPrimary)
+                .foregroundStyle(titleColor)
                 .lineLimit(1)
 
             Text(artist)
@@ -124,39 +124,67 @@ struct TrackCardView: View {
 
     @ViewBuilder
     private var artworkView: some View {
-        if let artwork = model.artwork {
-            ArtworkImage(artwork, width: 44, height: 44)
-        }
-        else if let url = model.artworkURL {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .empty, .failure:
-                    artworkPlaceholderView
-                @unknown default:
-                    artworkPlaceholderView
-                }
+        TrackArtworkView(track: artworkTrack, size: Layout.Card.Artwork.size)
+            .overlay(alignment: .center) {
+                artworkPlaybackOverlay
             }
-        }
-        else {
-            artworkPlaceholderView
+    }
+
+    private var artworkTrack: LibraryTrack {
+        LibraryTrack(
+            id: model.id,
+            title: model.title,
+            artistName: model.artist,
+            artwork: model.artwork,
+            artworkURL: model.artworkURL,
+            libraryAddedDate: nil,
+            durationSeconds: nil
+        )
+    }
+
+    @ViewBuilder
+    private var artworkPlaybackOverlay: some View {
+        switch model.playbackState {
+        case .idle:
+            EmptyView()
+        case .playing, .paused:
+            RoundedRectangle(cornerRadius: Layout.Card.Artwork.cornerRadius)
+                .fill(Color.black.opacity(Layout.Card.Artwork.overlayOpacity))
+                .overlay {
+                    Image(systemName: overlayImageName)
+                        .font(.system(size: Layout.Card.Artwork.overlayIconSize, weight: .bold))
+                        .foregroundStyle(.white)
+                }
         }
     }
 
-    private var artworkPlaceholderView: some View {
-        LinearGradient(
-            colors: [Color.cmPrimarySecondary, Color.cmPrimary],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay(
-            Image(systemName: "music.note")
-                .font(.system(size: Layout.Card.Artwork.placeholderIconSize, weight: .semibold))
-                .foregroundStyle(.white)
-        )
+    private var overlayImageName: String {
+        switch model.playbackState {
+        case .idle, .paused:
+            return "play.fill"
+        case .playing:
+            return "pause.fill"
+        }
+    }
+
+    private var cardBackgroundColor: Color {
+        switch model.playbackState {
+        case .idle:
+            return .cmBackgroundLight
+        case .playing:
+            return .cmPrimarySecondary.opacity(0.12)
+        case .paused:
+            return .cmBackgroundLight
+        }
+    }
+
+    private var titleColor: Color {
+        switch model.playbackState {
+        case .playing:
+            return .cmPrimarySecondary
+        case .idle, .paused:
+            return .cmTextPrimary
+        }
     }
 
     // @0ne1ce: now it's only for onboarding purpose, but it could be used for analytics or other cool things
@@ -199,7 +227,8 @@ private enum Layout {
         enum Artwork {
             static let size: CGFloat = 44
             static let cornerRadius: CGFloat = 8
-            static let placeholderIconSize: CGFloat = 18
+            static let overlayIconSize: CGFloat = 18
+            static let overlayOpacity: CGFloat = 0.5
         }
 
         enum DragAnimation {

@@ -14,11 +14,11 @@ final class HomeViewModelImpl: HomeViewModel {
 
     // MARK: - Initializers
 
-    init(router: any HomeRouter) {
+    init(router: HomeRouter) {
         self.router = router
     }
 
     // MARK: - Private properties
 
-    private let router: any HomeRouter
+    private let router: HomeRouter
 }

@@ -12,7 +12,8 @@ struct LibraryFactory {
         let router = LibraryRouterImpl(appRouter: externalDeps.appRouter)
         let viewModel = LibraryViewModelImpl(
             router: router,
-            musicService: externalDeps.musicService
+            musicService: externalDeps.musicService,
+            playerService: externalDeps.playerService
         )
 
         return LibraryView(viewModel: viewModel)

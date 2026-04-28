@@ -15,24 +15,13 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
                 handleScenePhaseChange(newPhase)
             }
     }
-
-
-    // MARK: - Initializer
-
-    init(viewModel: ViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
-    }
-    
     // MARK: - Private properties and methods
 
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var viewModel: ViewModel
 
-    private var titleView: some View {
-        Text(viewModel.title)
-            .font(.cmScreenTitle)
-            .foregroundStyle(Color.cmTextPrimary)
-            .padding(.horizontal, Spacing.xl)
+    init(viewModel: ViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     @ViewBuilder
@@ -103,7 +92,15 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
                 sectionHeaderRow(section.title)
 
                 ForEach(section.tracks) { track in
-                    TrackCardView(model: .init(track: track))
+                    Button(action: { handleTrackTap(track, sections: sections) }) {
+                        TrackCardView(
+                            model: TrackCardModel(
+                                track: track,
+                                playbackState: viewModel.playbackState(for: track.id)
+                            )
+                        )
+                    }
+                    .buttonStyle(.plain)
                         .listRowInsets(
                             EdgeInsets(
                                 top: Spacing.xs,
@@ -151,6 +148,13 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
             return
         @unknown default:
             return
+        }
+    }
+
+    private func handleTrackTap(_ track: LibraryTrack, sections: [LibrarySection]) {
+        let queueTracks = sections.flatMap(\.tracks)
+        Task {
+            await viewModel.onTrackTap(track, queueTracks: queueTracks)
         }
     }
 }

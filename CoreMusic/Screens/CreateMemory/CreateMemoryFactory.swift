@@ -12,7 +12,10 @@ struct CreateMemoryFactory {
         let router = CreateMemoryRouterImpl(appRouter: externalDeps.appRouter)
         let viewModel = CreateMemoryViewModelImpl(
             router: router,
-            songID: songID
+            songID: songID,
+            musicService: externalDeps.musicService,
+            playerService: externalDeps.playerService,
+            memoryRepository: externalDeps.memoryRepository
         )
 
         return CreateMemoryView(viewModel: viewModel)

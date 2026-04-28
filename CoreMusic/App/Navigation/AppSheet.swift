@@ -1,5 +1,7 @@
 import Foundation
 
-enum AppSheet: Hashable {
-    // TODO: cases for sheet-screens
+enum AppSheet: Identifiable, Hashable {
+    case player(songID: String)
+    
+    var id: Self { self }
 }

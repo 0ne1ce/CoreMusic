@@ -10,7 +10,10 @@ struct MemoriesFactory {
 
     func makeMemoriesScreen() -> some View {
         let router = MemoriesRouterImpl(appRouter: externalDeps.appRouter)
-        let viewModel = MemoriesViewModelImpl(router: router)
+        let viewModel = MemoriesViewModelImpl(
+            router: router,
+            memoryRepository: externalDeps.memoryRepository
+        )
 
         return MemoriesView(viewModel: viewModel)
     }

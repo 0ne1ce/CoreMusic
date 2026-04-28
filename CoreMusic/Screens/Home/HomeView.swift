@@ -4,13 +4,17 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text(viewModel.title)
-                .font(.cmScreenTitle)
-                .foregroundStyle(Color.cmTextPrimary)
+        VStack {
+            Spacer()
+            
+            EmptyStateView(
+                systemImage: "memories",
+                title: "Здесь пока пусто. Продолжайте добовлять воспоминания!"
+            )
             
             Spacer()
         }
+        .navigationTitle(viewModel.title)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(.horizontal, Spacing.xl)
         .padding(.top, Spacing.lg)
