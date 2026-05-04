@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8AC9F8F72FA64A48004ADB52 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8AC9F8F62FA64A48004ADB52 /* FirebaseAuth */; };
+		8AC9F8F92FA64A48004ADB52 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8AC9F8F82FA64A48004ADB52 /* FirebaseCore */; };
+		8AC9F8FB2FA64A48004ADB52 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8AC9F8FA2FA64A48004ADB52 /* FirebaseDatabase */; };
+		8AC9F8FD2FA64A48004ADB52 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 8AC9F8FC2FA64A48004ADB52 /* FirebaseFirestore */; };
+		8AC9F8FF2FA64A48004ADB52 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8AC9F8FE2FA64A48004ADB52 /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8A732F4B2F32AE8E001D77AC /* CoreMusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreMusic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +44,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8AC9F8FB2FA64A48004ADB52 /* FirebaseDatabase in Frameworks */,
+				8AC9F8FD2FA64A48004ADB52 /* FirebaseFirestore in Frameworks */,
+				8AC9F8F92FA64A48004ADB52 /* FirebaseCore in Frameworks */,
+				8AC9F8FF2FA64A48004ADB52 /* FirebaseStorage in Frameworks */,
+				8AC9F8F72FA64A48004ADB52 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +91,11 @@
 			);
 			name = CoreMusic;
 			packageProductDependencies = (
+				8AC9F8F62FA64A48004ADB52 /* FirebaseAuth */,
+				8AC9F8F82FA64A48004ADB52 /* FirebaseCore */,
+				8AC9F8FA2FA64A48004ADB52 /* FirebaseDatabase */,
+				8AC9F8FC2FA64A48004ADB52 /* FirebaseFirestore */,
+				8AC9F8FE2FA64A48004ADB52 /* FirebaseStorage */,
 			);
 			productName = CoreMusic;
 			productReference = 8A732F4B2F32AE8E001D77AC /* CoreMusic.app */;
@@ -107,6 +125,9 @@
 			);
 			mainGroup = 8A732F422F32AE8E001D77AC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8A732F4C2F32AE8E001D77AC /* Products */;
 			projectDirPath = "";
@@ -345,6 +366,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.12.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8AC9F8F62FA64A48004ADB52 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		8AC9F8F82FA64A48004ADB52 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		8AC9F8FA2FA64A48004ADB52 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		8AC9F8FC2FA64A48004ADB52 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		8AC9F8FE2FA64A48004ADB52 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8AC9F8F52FA64A48004ADB52 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8A732F432F32AE8E001D77AC /* Project object */;
 }

@@ -6,4 +6,5 @@ struct CreateMemoryExternalDeps {
     let musicService: any MusicService
     let playerService: PlayerService
     let memoryRepository: MemoryRepository
+    let makeLocationSearchService: @MainActor () -> LocationSearchService
 }

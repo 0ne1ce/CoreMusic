@@ -11,9 +11,11 @@ struct AppDependencies {
     let musicService: any MusicService
     let playerService: PlayerServiceImpl
     let memoryRepository: MemoryRepository
+    let authService: AuthServiceImpl
     let createMemoryFactory: CreateMemoryFactory
     let trackPlayerFactory: TrackPlayerFactory
     let memoryCarouselFactory: MemoryCarouselFactory
+    let authFactory: AuthFactory
     let factories: RootScreenFactories
 
     // MARK: - Public methods
@@ -24,12 +26,19 @@ struct AppDependencies {
         let musicService: any MusicService = MusicServiceImpl()
         let playerService = PlayerServiceImpl(musicService: musicService)
         let memoryRepository: MemoryRepository = SwiftDataMemoryRepository(modelContainer: modelContainer)
+        let authService = AuthServiceImpl()
+        // TODO: Uncomment after adding Sign in with Apple capability
+        // authService.startListening()
+        let makeLocationSearchService: @MainActor () -> LocationSearchService = {
+            LocationSearchServiceImpl()
+        }
         let createMemoryFactory = CreateMemoryFactory(
             externalDeps: CreateMemoryExternalDeps(
                 appRouter: appRouter,
                 musicService: musicService,
                 playerService: playerService,
-                memoryRepository: memoryRepository
+                memoryRepository: memoryRepository,
+                makeLocationSearchService: makeLocationSearchService
             )
         )
         let trackPlayerFactory = TrackPlayerFactory(
@@ -45,6 +54,9 @@ struct AppDependencies {
                 playerService: playerService
             )
         )
+        let authFactory = AuthFactory(
+            externalDeps: AuthExternalDeps(authService: authService)
+        )
         let factories = AppDependencies.makeFactories(
             appRouter: appRouter,
             musicService: musicService,
@@ -58,9 +70,11 @@ struct AppDependencies {
             musicService: musicService,
             playerService: playerService,
             memoryRepository: memoryRepository,
+            authService: authService,
             createMemoryFactory: createMemoryFactory,
             trackPlayerFactory: trackPlayerFactory,
             memoryCarouselFactory: memoryCarouselFactory,
+            authFactory: authFactory,
             factories: factories
         )
     }
@@ -71,12 +85,17 @@ struct AppDependencies {
         let musicService: any MusicService = MockMusicService()
         let playerService = PlayerServiceImpl(musicService: musicService)
         let memoryRepository: MemoryRepository = SwiftDataMemoryRepository(modelContainer: modelContainer)
+        let authService = AuthServiceImpl()
+        let makeLocationSearchService: @MainActor () -> LocationSearchService = {
+            MockLocationSearchService()
+        }
         let createMemoryFactory = CreateMemoryFactory(
             externalDeps: CreateMemoryExternalDeps(
                 appRouter: appRouter,
                 musicService: musicService,
                 playerService: playerService,
-                memoryRepository: memoryRepository
+                memoryRepository: memoryRepository,
+                makeLocationSearchService: makeLocationSearchService
             )
         )
         let trackPlayerFactory = TrackPlayerFactory(
@@ -92,6 +111,9 @@ struct AppDependencies {
                 playerService: playerService
             )
         )
+        let authFactory = AuthFactory(
+            externalDeps: AuthExternalDeps(authService: authService)
+        )
         let factories = AppDependencies.makeFactories(
             appRouter: appRouter,
             musicService: musicService,
@@ -105,9 +127,11 @@ struct AppDependencies {
             musicService: musicService,
             playerService: playerService,
             memoryRepository: memoryRepository,
+            authService: authService,
             createMemoryFactory: createMemoryFactory,
             trackPlayerFactory: trackPlayerFactory,
             memoryCarouselFactory: memoryCarouselFactory,
+            authFactory: authFactory,
             factories: factories
         )
     }

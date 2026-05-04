@@ -84,7 +84,6 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
     // MARK: - Private properties
 
     @StateObject private var viewModel: ViewModel
-    @StateObject private var locationSearch = LocationSearchService()
     @FocusState private var isInputFieldFocused: Bool
 
     // MARK: - Private methods
@@ -237,22 +236,18 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                     "Начните вводить название",
                     text: Binding(
                         get: { viewModel.locationName },
-                        set: {
-                            viewModel.locationName = $0
-                            locationSearch.query = $0
-                        }
+                        set: { viewModel.locationNameChanged($0) }
                     )
                 )
                 .textFieldStyle(.plain)
                 .tint(.primaryLightCm)
                 .focused($isInputFieldFocused)
 
-                if !locationSearch.suggestions.isEmpty {
+                if !viewModel.locationSuggestions.isEmpty {
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(locationSearch.suggestions) { suggestion in
+                        ForEach(viewModel.locationSuggestions) { suggestion in
                             Button {
-                                viewModel.locationName = suggestion.city
-                                locationSearch.clear()
+                                viewModel.selectLocationSuggestion(suggestion)
                                 isInputFieldFocused = false
                             } label: {
                                 HStack(spacing: Spacing.sm) {
@@ -433,6 +428,13 @@ private enum Layout {
 
 #Preview {
     NavigationStack {
-        try! CreateMemoryView(viewModel: CreateMemoryViewModelImpl(router: CreateMemoryRouterImpl(appRouter: AppRouter()), songID: "preview-7", musicService: MockMusicService(), playerService: PlayerServiceImpl(musicService: MockMusicService()), memoryRepository: SwiftDataMemoryRepository(modelContainer: ModelContainer())))
+        try! CreateMemoryView(viewModel: CreateMemoryViewModelImpl(
+            router: CreateMemoryRouterImpl(appRouter: AppRouter()),
+            songID: "preview-7",
+            musicService: MockMusicService(),
+            playerService: PlayerServiceImpl(musicService: MockMusicService()),
+            memoryRepository: SwiftDataMemoryRepository(modelContainer: ModelContainer()),
+            locationSearchService: MockLocationSearchService()
+        ))
     }
 }

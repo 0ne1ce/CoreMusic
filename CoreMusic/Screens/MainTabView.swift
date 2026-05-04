@@ -7,9 +7,9 @@ struct MainTabView: View {
     let createMemoryFactory: CreateMemoryFactory
     let trackPlayerFactory: TrackPlayerFactory
     let memoryCarouselFactory: MemoryCarouselFactory
-    @ObservedObject var playerService: PlayerServiceImpl
-    
+
     @Environment(AppRouter.self) private var appRouter
+    @EnvironmentObject private var playerService: PlayerServiceImpl
 
     var body: some View {
         @Bindable var appRouter = appRouter

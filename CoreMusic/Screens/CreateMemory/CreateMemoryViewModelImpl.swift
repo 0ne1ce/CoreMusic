@@ -19,6 +19,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
     @Published var isDateEnabled = false
     @Published var isLocationEnabled = false
     @Published var locationName = ""
+    @Published private(set) var locationSuggestions: [LocationSuggestion] = []
     @Published var tagInput = ""
     @Published private(set) var tags: [String] = []
     @Published var isFavorite = false
@@ -40,6 +41,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
         musicService: any MusicService,
         playerService: PlayerService,
         memoryRepository: MemoryRepository,
+        locationSearchService: LocationSearchService,
         editingMemory: Memory? = nil
     ) {
         self.router = router
@@ -47,6 +49,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
         self.musicService = musicService
         self.playerService = playerService
         self.memoryRepository = memoryRepository
+        self.locationSearchService = locationSearchService
         self.editingMemory = editingMemory
         self.isEditMode = editingMemory != nil
         self.navigationTitle = editingMemory != nil ? "Редактировать" : "Новое воспоминание"
@@ -54,6 +57,18 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
         if let memory = editingMemory {
             prefill(from: memory)
         }
+
+        locationSearchService.suggestionsPublisher
+            .receive(on: RunLoop.main)
+            .assign(to: &$locationSuggestions)
+
+        userQuerySubject
+            .removeDuplicates()
+            .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
+            .sink { [weak self] query in
+                self?.locationSearchService.updateQuery(query)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Methods
@@ -166,6 +181,16 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
         tags.removeAll { $0 == tag }
     }
 
+    func locationNameChanged(_ value: String) {
+        locationName = value
+        userQuerySubject.send(value)
+    }
+
+    func selectLocationSuggestion(_ suggestion: LocationSuggestion) {
+        locationName = suggestion.city
+        locationSearchService.clear()
+    }
+
     // MARK: - Private properties
 
     private let router: CreateMemoryRouter
@@ -173,7 +198,10 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
     private let musicService: any MusicService
     private let playerService: PlayerService
     private let memoryRepository: MemoryRepository
+    private let locationSearchService: LocationSearchService
     private let editingMemory: Memory?
+    private let userQuerySubject = PassthroughSubject<String, Never>()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private methods
 

@@ -16,6 +16,7 @@ protocol CreateMemoryViewModel: ObservableObject {
     var isDateEnabled: Bool { get set }
     var isLocationEnabled: Bool { get set }
     var locationName: String { get set }
+    var locationSuggestions: [LocationSuggestion] { get }
     var tagInput: String { get set }
     var tags: [String] { get }
     var isFavorite: Bool { get set }
@@ -34,4 +35,6 @@ protocol CreateMemoryViewModel: ObservableObject {
     func onAddTagTap()
     func onRemoveTagTap(_ tag: String)
     func dismissError()
+    func locationNameChanged(_ value: String)
+    func selectLocationSuggestion(_ suggestion: LocationSuggestion)
 }

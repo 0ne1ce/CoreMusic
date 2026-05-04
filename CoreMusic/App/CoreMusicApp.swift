@@ -1,5 +1,6 @@
-import SwiftUI
+import FirebaseCore
 import SwiftData
+import SwiftUI
 
 @main
 struct CoreMusicApp: App {
@@ -10,9 +11,12 @@ struct CoreMusicApp: App {
         case failed(String)
     }
 
-    // MARK: - Properties
+    // MARK: - Initializer
 
-    @State private var bootstrapState = CoreMusicApp.makeBootstrapState()
+    init() {
+        FirebaseApp.configure()
+        _bootstrapState = State(initialValue: Self.makeBootstrapState())
+    }
 
     // MARK: - Body
 
@@ -25,9 +29,11 @@ struct CoreMusicApp: App {
                     createMemoryFactory: deps.createMemoryFactory,
                     trackPlayerFactory: deps.trackPlayerFactory,
                     memoryCarouselFactory: deps.memoryCarouselFactory,
-                    playerService: deps.playerService
+                    authFactory: deps.authFactory
                 )
                 .environment(deps.appRouter)
+                .environmentObject(deps.playerService)
+                .environmentObject(deps.authService)
                 .modelContainer(deps.modelContainer)
             case let .failed(message):
                 EmptyStateView(
@@ -39,6 +45,10 @@ struct CoreMusicApp: App {
             }
         }
     }
+
+    // MARK: - Private properties
+
+    @State private var bootstrapState: BootstrapState
 
     // MARK: - Private methods
 
