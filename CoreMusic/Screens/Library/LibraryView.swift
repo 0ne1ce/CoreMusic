@@ -36,7 +36,7 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
         case let .error(message):
             errorView(message)
         case let .loaded(sections):
-            loadedView(sections)
+            loadedView(allSections: sections, displayed: viewModel.displayedSections)
         }
     }
 
@@ -86,47 +86,73 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
         )
     }
 
-    private func loadedView(_ sections: [LibrarySection]) -> some View {
+    private func loadedView(allSections: [LibrarySection], displayed: [LibrarySection]) -> some View {
         List {
-            ForEach(sections) { section in
-                sectionHeaderRow(section.title)
+            SearchTextField(text: Binding(
+                get: { viewModel.searchInput },
+                set: { viewModel.searchInput = $0 }
+            ))
+            .listRowInsets(EdgeInsets(
+                top: Spacing.sm,
+                leading: Spacing.lg,
+                bottom: Spacing.sm,
+                trailing: Spacing.lg
+            ))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
 
-                ForEach(section.tracks) { track in
-                    Button(action: { handleTrackTap(track, sections: sections) }) {
-                        TrackCardView(
-                            model: TrackCardModel(
-                                track: track,
-                                playbackState: viewModel.playbackState(for: track.id)
-                            )
-                        )
-                    }
-                    .buttonStyle(.plain)
-                        .listRowInsets(
-                            EdgeInsets(
-                                top: Spacing.xs,
-                                leading: Spacing.md,
-                                bottom: .zero,
-                                trailing: Spacing.md
-                            )
-                        )
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .contentShape(Rectangle())
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            Button {
-                                viewModel.onTrackAddTap(track)
-                            } label: {
-                                Image(systemName: "plus")
-                            }
-                            .labelStyle(.iconOnly)
-                            .tint(Color.cmPrimaryLight)
-                        }
-                }
+            if displayed.isEmpty && !allSections.isEmpty {
+                EmptyStateView(systemImage: "magnifyingglass", title: "Ничего не найдено", subtitle: "Попробуйте изменить запрос")
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            }
+            else {
+                displayedTracks(displayed)
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnTap()
         .background(Color.cmBackgroundPrimary)
+    }
+    
+    private func displayedTracks(_ displayed: [LibrarySection]) -> some View {
+        ForEach(displayed) { section in
+            sectionHeaderRow(section.title)
+
+            ForEach(section.tracks) { track in
+                Button(action: { handleTrackTap(track, sections: displayed) }) {
+                    TrackCardView(
+                        model: TrackCardModel(
+                            track: track,
+                            playbackState: viewModel.playbackState(for: track.id)
+                        )
+                    )
+                }
+                .buttonStyle(.plain)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: Spacing.xs,
+                            leading: Spacing.md,
+                            bottom: .zero,
+                            trailing: Spacing.md
+                        )
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .contentShape(Rectangle())
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button {
+                            viewModel.onTrackAddTap(track)
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .labelStyle(.iconOnly)
+                        .tint(Color.cmPrimaryLight)
+                    }
+            }
+        }
     }
 
     private func sectionHeaderRow(_ title: String) -> some View {

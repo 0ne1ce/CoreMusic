@@ -69,8 +69,19 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
     private var memoriesGridView: some View {
         ScrollView {
             VStack(spacing: .zero) {
+                SearchTextField(text: Binding(
+                    get: { viewModel.searchInput },
+                    set: { viewModel.searchInput = $0 }
+                ))
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.sm)
+
+                if viewModel.displayedMemories.isEmpty {
+                    EmptyStateView(systemImage: "magnifyingglass", title: "Ничего не найдено", subtitle: "Попробуйте изменить запрос")
+                }
+                else {
                 LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                    ForEach(Array(viewModel.memories.enumerated()), id: \.offset) { index, memory in
+                    ForEach(Array(viewModel.displayedMemories.enumerated()), id: \.offset) { index, memory in
                         Button {
                             viewModel.onMemoryTap(memory)
                         } label: {
@@ -100,7 +111,7 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
                     }
                 }
                 .padding(.horizontal, Spacing.lg)
-                .padding(.top, Spacing.sm)
+                }
 
                 // @0ne1ce: adding extra space in the bottom of ScrollView, because mini player isn't in .safeAreaInset(.bottom, ...)
                 Rectangle()
@@ -109,6 +120,8 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardOnTap()
         .background(Color.cmBackgroundPrimary)
     }
 }

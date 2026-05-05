@@ -39,10 +39,11 @@ struct MiniPlayerView: View {
                 Image(systemName: playerService.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: Layout.controlSize, weight: .bold))
                     .foregroundStyle(Color.cmTextPrimary)
-                    .frame(width: Layout.controlHitArea, height: Layout.controlHitArea)
             }
             .buttonStyle(.plain)
-            .padding(.trailing, Spacing.md)
+            .frame(width: Layout.controlHitArea, height: Layout.controlHitArea)
+            .contentShape(Rectangle())
+            .padding(.trailing, Spacing.sm)
         }
         .padding(.leading, Spacing.sm)
         .padding(.vertical, Spacing.sm)
@@ -64,6 +65,6 @@ private enum Layout {
     static let artworkSize: CGFloat = 40
     static let artworkCornerRadius: CGFloat = 10
     static let controlSize: CGFloat = 18
-    static let controlHitArea: CGFloat = 36
+    static let controlHitArea: CGFloat = 44
     static let cornerRadius: CGFloat = 18
 }

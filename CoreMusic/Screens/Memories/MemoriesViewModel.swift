@@ -8,6 +8,8 @@ protocol MemoriesViewModel: ObservableObject {
 
     var title: String { get }
     var memories: [Memory] { get }
+    var displayedMemories: [Memory] { get }
+    var searchInput: String { get set }
     var isLoading: Bool { get }
     var errorMessage: String? { get }
 
@@ -26,8 +28,24 @@ final class MemoriesViewModelImpl: MemoriesViewModel {
 
     @Published var title = "Воспоминания"
     @Published private(set) var memories: [Memory] = []
+    @Published var searchInput: String = ""
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
+
+    var displayedMemories: [Memory] {
+        let input = searchInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !input.isEmpty else {
+            return memories
+        }
+        return memories.filter { memory in
+            memory.memoryTitle.localizedStandardContains(input) ||
+            memory.note.localizedStandardContains(input) ||
+            memory.songTitle.localizedStandardContains(input) ||
+            memory.artistName.localizedStandardContains(input) ||
+            (memory.locationName?.localizedStandardContains(input) ?? false) ||
+            memory.tagsStorage.localizedStandardContains(input)
+        }
+    }
 
     // MARK: - Initializer
 

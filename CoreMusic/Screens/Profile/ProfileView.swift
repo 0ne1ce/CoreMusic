@@ -21,6 +21,9 @@ struct ProfileView: View {
                 .padding(.top, Spacing.xl)
             }
             .background(Color.cmBackgroundPrimary)
+            .onTapGesture {
+                isNameFocused = false
+            }
             .navigationTitle("Профиль")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -43,6 +46,7 @@ struct ProfileView: View {
                 }
                 .buttonStyle(.plain)
             }
+            .ignoresSafeArea(.keyboard)
         }
     }
 

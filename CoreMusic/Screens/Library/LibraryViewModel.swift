@@ -9,6 +9,8 @@ protocol LibraryViewModel: ObservableObject {
 
     var title: String { get }
     var state: LibraryState { get }
+    var searchInput: String { get set }
+    var displayedSections: [LibrarySection] { get }
 
     // MARK: - Methods
 
@@ -28,6 +30,22 @@ final class LibraryViewModelImpl: LibraryViewModel {
     let title = "Медиатека"
 
     @Published private(set) var state: LibraryState = .idle
+    @Published var searchInput: String = ""
+
+    var displayedSections: [LibrarySection] {
+        guard case let .loaded(sections) = state else {
+            return []
+        }
+        let input = searchInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !input.isEmpty else {
+            return sections
+        }
+        let filtered = loadedTracks.filter { track in
+            track.title.localizedStandardContains(input) ||
+            track.artistName.localizedStandardContains(input)
+        }
+        return LibrarySectionBuilder.group(filtered)
+    }
 
     // MARK: - Initializer
 
@@ -89,6 +107,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
     private var fullSectionsTask: Task<Void, Never>?
     private var isLoadInProgress = false
     private var loadRevision = 0
+    private var loadedTracks: [LibraryTrack] = []
 
     // MARK: - Private methods
 
@@ -123,8 +142,8 @@ final class LibraryViewModelImpl: LibraryViewModel {
             )
 
             if shouldShowInitialSections {
-                let initialSections = buildInitialSections(from: tracks)
-                state = .loaded(initialSections)
+                let initialTracks = Array(tracks.prefix(Constants.initialTrackCount))
+                applyLoadedState(tracks: initialTracks, sections: LibrarySectionBuilder.group(initialTracks))
             }
 
             scheduleLoadedStateUpdate(
@@ -169,9 +188,9 @@ final class LibraryViewModelImpl: LibraryViewModel {
         return loadRevision
     }
 
-    private func buildInitialSections(from tracks: [LibraryTrack]) -> [LibrarySection] {
-        let initialTracks = Array(tracks.prefix(Constants.initialTrackCount))
-        return LibrarySectionBuilder.group(initialTracks)
+    private func applyLoadedState(tracks: [LibraryTrack], sections: [LibrarySection]) {
+        loadedTracks = tracks
+        state = .loaded(sections)
     }
 
     private func scheduleLoadedStateUpdate(
@@ -180,8 +199,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
         shouldShowInitialSections: Bool
     ) {
         if tracks.count <= Constants.initialTrackCount {
-            let sections = LibrarySectionBuilder.group(tracks)
-            state = .loaded(sections)
+            applyLoadedState(tracks: tracks, sections: LibrarySectionBuilder.group(tracks))
             return
         }
 
@@ -195,7 +213,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
                 return
             }
 
-            self.state = .loaded(fullSections)
+            self.applyLoadedState(tracks: tracks, sections: fullSections)
         }
     }
 

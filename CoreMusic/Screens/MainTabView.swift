@@ -40,6 +40,7 @@ struct MainTabView: View {
                 .padding(.bottom, Layout.miniPlayerBottomPadding)
             }
         }
+        .ignoresSafeArea(.keyboard)
         .fullScreenCover(item: $appRouter.presentedCover) { cover in
             NavigationStack(path: $appRouter.coverPath) {
                 coverRoot(for: cover)
