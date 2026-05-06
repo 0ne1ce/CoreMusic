@@ -87,9 +87,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 }
                 .padding(.horizontal, Spacing.lg)
 
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Layout.tracksLoaderHeight)
+                tracksLoadingPlaceholder
             }
         }
         else if !viewModel.recentTracks.isEmpty {
@@ -102,6 +100,15 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 tracksPagedCarousel
             }
         }
+    }
+
+    private var tracksLoadingPlaceholder: some View {
+        VStack(spacing: Spacing.sm) {
+            ForEach(0..<Layout.tracksPerPage, id: \.self) { _ in
+                TrackCardSkeleton()
+            }
+        }
+        .padding(.horizontal, Spacing.lg)
     }
 
     @ViewBuilder
@@ -156,7 +163,8 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             .scrollTargetLayout()
         }
         .scrollTargetBehavior(.viewAligned)
-        .safeAreaPadding(.horizontal, Spacing.lg)
+        .safeAreaPadding(.horizontal, Spacing.lg + Spacing.sm)
+        .padding(.leading, -Spacing.sm)
         .scrollIndicators(.hidden)
     }
 
@@ -206,6 +214,5 @@ struct HomeView<ViewModel: HomeViewModel>: View {
 private enum Layout {
     static let memoryCardSize: CGFloat = 224
     static let tracksPerPage = 3
-    static let tracksLoaderHeight: CGFloat = 200
     static let bottomSpacer: CGFloat = 40
 }

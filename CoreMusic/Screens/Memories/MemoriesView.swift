@@ -40,10 +40,7 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
     @ViewBuilder
     private var contentView: some View {
         if viewModel.isLoading {
-            Spacer()
-            ProgressView()
-                .frame(maxWidth: .infinity)
-            Spacer()
+            memoriesLoadingPlaceholder
         }
         else if let errorMessage = viewModel.errorMessage {
             EmptyStateView(
@@ -64,6 +61,16 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
         else {
             memoriesGridView
         }
+    }
+
+    private var memoriesLoadingPlaceholder: some View {
+        LazyVGrid(columns: columns, spacing: Spacing.sm) {
+            ForEach(0..<Layout.skeletonCount, id: \.self) { _ in
+                MemoryCardSkeleton()
+            }
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.top, Spacing.lg)
     }
 
     private var memoriesGridView: some View {
@@ -124,4 +131,10 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
         .dismissKeyboardOnTap()
         .background(Color.cmBackgroundPrimary)
     }
+}
+
+// MARK: - Private types
+
+private enum Layout {
+    static let skeletonCount = 6
 }

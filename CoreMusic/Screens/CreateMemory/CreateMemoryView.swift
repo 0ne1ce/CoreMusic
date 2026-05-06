@@ -181,12 +181,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 )
             }
             else {
-                RoundedRectangle(cornerRadius: Layout.sectionCardCornerRadius)
-                    .fill(Color.cmBackgroundLight)
-                    .frame(height: 86)
-                    .overlay {
-                        ProgressView()
-                    }
+                TrackCardSkeleton()
             }
         }
     }

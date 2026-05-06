@@ -41,19 +41,18 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: Spacing.md) {
-            Spacer()
-
-            ProgressView()
-
-            Text("Загружаем медиатеку…")
-                .font(.cmCallout)
-                .foregroundStyle(Color.cmTextSecondary)
-
-            Spacer()
+        ScrollView {
+            VStack(spacing: Spacing.xs) {
+                ForEach(0..<Layout.skeletonCount, id: \.self) { _ in
+                    TrackCardSkeleton()
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.xs)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, Spacing.xl)
+        .scrollDisabled(true)
+        .scrollContentBackground(.hidden)
+        .background(Color.cmBackgroundPrimary)
     }
 
     private var deniedView: some View {
@@ -183,4 +182,10 @@ struct LibraryView<ViewModel: LibraryViewModel>: View {
             await viewModel.onTrackTap(track, queueTracks: queueTracks)
         }
     }
+}
+
+// MARK: - Private types
+
+private enum Layout {
+    static let skeletonCount = 14
 }
