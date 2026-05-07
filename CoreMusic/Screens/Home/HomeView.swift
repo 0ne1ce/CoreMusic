@@ -48,6 +48,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             VStack(alignment: .leading, spacing: Spacing.xxl) {
                 recentMemoriesSection
                 recentTracksSection
+                cityTourSection
                 favoritesSection
 
                 Rectangle()
@@ -109,6 +110,47 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             }
         }
         .padding(.horizontal, Spacing.lg)
+    }
+
+    @ViewBuilder
+    private var cityTourSection: some View {
+        if !viewModel.cityTourMemories.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                SectionHeaderView(title: "Тур по городам") {
+                    viewModel.onSectionTap(.cityTour)
+                }
+                .padding(.horizontal, Spacing.lg)
+
+                cityTourCarousel(memories: viewModel.cityTourMemories)
+            }
+        }
+    }
+
+    private func cityTourCarousel(memories: [Memory]) -> some View {
+        ScrollView(.horizontal) {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                ForEach(memories) { memory in
+                    Button {
+                        viewModel.onMemoryTap(memory, in: .cityTour)
+                    } label: {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                            MemoryCardView(
+                                memory: memory,
+                                onFavoriteTap: { viewModel.onFavoriteTap(memory) }
+                            )
+                            .frame(width: Layout.memoryCardSize, height: Layout.memoryCardSize)
+
+                            if let city = memory.locationName, !city.isEmpty {
+                                MemoryTagView(text: city)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+        .scrollIndicators(.hidden)
     }
 
     @ViewBuilder

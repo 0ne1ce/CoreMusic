@@ -219,15 +219,7 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
 
         return HStack(spacing: Spacing.sm) {
             ForEach(allTags, id: \.self) { tag in
-                Text(tag)
-                    .font(.cmFootnote)
-                    .foregroundStyle(.white.opacity(0.9))
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.vertical, Spacing.xs + 2)
-                    .background(
-                        Capsule().fill(.white.opacity(0.12))
-                    )
-                    .lineLimit(1)
+                MemoryTagView(text: tag)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

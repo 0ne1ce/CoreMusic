@@ -6,6 +6,7 @@ enum HomeSection {
     case recentMemories
     case recentTracks
     case favorites
+    case cityTour
 }
 
 @MainActor
@@ -15,6 +16,7 @@ protocol HomeViewModel: ObservableObject {
     var title: String { get }
     var recentMemories: [Memory] { get }
     var favoriteMemories: [Memory] { get }
+    var cityTourMemories: [Memory] { get }
     var recentTracks: [LibraryTrack] { get }
     var isLoadingTracks: Bool { get }
     var hasAnyContent: Bool { get }
@@ -38,12 +40,17 @@ final class HomeViewModelImpl: HomeViewModel {
     @Published var title = "Главное"
     @Published private(set) var recentMemories: [Memory] = []
     @Published private(set) var favoriteMemories: [Memory] = []
+    @Published private(set) var cityTourMemories: [Memory] = []
     @Published private(set) var recentTracks: [LibraryTrack] = []
     @Published private(set) var isLoadingTracks = false
     private(set) var totalTracksCount = 0
 
     var hasAnyContent: Bool {
-        !recentMemories.isEmpty || !recentTracks.isEmpty || !favoriteMemories.isEmpty || isLoadingTracks
+        !recentMemories.isEmpty
+            || !recentTracks.isEmpty
+            || !favoriteMemories.isEmpty
+            || !cityTourMemories.isEmpty
+            || isLoadingTracks
     }
 
     // MARK: - Initializer
@@ -91,7 +98,7 @@ final class HomeViewModelImpl: HomeViewModel {
 
     func onSectionTap(_ section: HomeSection) {
         switch section {
-        case .recentMemories, .favorites:
+        case .recentMemories, .favorites, .cityTour:
             router.goToTab(.memories)
         case .recentTracks:
             router.goToTab(.library)
@@ -105,6 +112,8 @@ final class HomeViewModelImpl: HomeViewModel {
             ids = recentMemories.map(\.id)
         case .favorites:
             ids = favoriteMemories.map(\.id)
+        case .cityTour:
+            ids = cityTourMemories.map(\.id)
         case .recentTracks:
             return
         }
@@ -146,6 +155,11 @@ final class HomeViewModelImpl: HomeViewModel {
             let all = try memoryRepository.fetchMemories()
             recentMemories = Array(all.prefix(Constants.maxMemories))
             favoriteMemories = Array(all.filter(\.isFavorite).prefix(Constants.maxMemories))
+            cityTourMemories = Array(
+                all
+                    .filter { $0.locationName?.isEmpty == false }
+                    .prefix(Constants.maxMemories)
+            )
         }
         catch { }
     }
