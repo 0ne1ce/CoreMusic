@@ -5,7 +5,11 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.black.ignoresSafeArea() // TODO: MeshGradient?
+            AnimatedMeshGradient(
+                primary: Layout.gradientPrimary,
+                secondary: Layout.gradientSecondary
+            )
+            .ignoresSafeArea()
 
             if viewModel.memories.isEmpty {
                 EmptyStateView(
@@ -322,4 +326,6 @@ private enum Layout {
     static let placeholderIconSize: CGFloat = 48
     static let closeButtonSize: CGFloat = 32
     static let editButtonSize: CGFloat = 32
+    static let gradientPrimary: Color = .cmPrimary
+    static let gradientSecondary: Color = .cmPrimaryLight
 }

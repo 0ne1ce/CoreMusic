@@ -1,3 +1,4 @@
+import MusicKit
 import SwiftUI
 
 struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
@@ -33,7 +34,7 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
                 }
             }
         }
-        .background(Color.cmBackgroundPrimary)
+        .background { backgroundView }
         .onAppear {
             progressValue = viewModel.playbackTime
         }
@@ -44,6 +45,7 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
 
             progressValue = newValue
         }
+        .environment(\.colorScheme, .dark)
     }
 
     // MARK: - Initializer
@@ -63,6 +65,23 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
     }
 
     // MARK: - Private view properties and methods
+
+    private var backgroundView: some View {
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
+
+            if let track = viewModel.currentTrack {
+                BlurredArtworkOverlay(track: track)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+            }
+
+            Color.black
+                .opacity(Layout.dimOpacity)
+                .ignoresSafeArea()
+        }
+    }
 
     private func artworkCardView(geometry: GeometryProxy) -> some View {
         Group {
@@ -199,6 +218,24 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
     }
 }
 
+private struct BlurredArtworkOverlay: View {
+    let track: LibraryTrack
+
+    var body: some View {
+        if let artwork = track.artwork {
+            ArtworkImage(
+                artwork,
+                width: Layout.blurredArtworkSize,
+                height: Layout.blurredArtworkSize
+            )
+            .blur(radius: Layout.blurredArtworkBlur)
+            .scaleEffect(Layout.blurredArtworkScale)
+            .opacity(Layout.blurredArtworkOpacity)
+            .allowsHitTesting(false)
+        }
+    }
+}
+
 private enum Layout {
     static let maxArtworkSize: CGFloat = 520
     static let artworkTopInset: CGFloat = 18
@@ -209,8 +246,16 @@ private enum Layout {
     static let secondaryControlSize: CGFloat = 30
     static let primaryHitArea: CGFloat = 72
     static let closeButtonSize: CGFloat = 52
+    static let dimOpacity: CGFloat = 0.18
+    static let blurredArtworkSize: CGFloat = 1024
+    static let blurredArtworkBlur: CGFloat = 60
+    static let blurredArtworkScale: CGFloat = 1.3
+    static let blurredArtworkOpacity: CGFloat = 0.7
 }
 
 #Preview {
-    TrackPlayerView(viewModel: TrackPlayerViewModelImpl(router: TrackPlayerRouterImpl(appRouter: AppRouter()), playerService: PlayerServiceImpl(musicService: MockMusicService())))
+    TrackPlayerView(viewModel: TrackPlayerViewModelImpl(
+        router: TrackPlayerRouterImpl(appRouter: AppRouter()),
+        playerService: PlayerServiceImpl(musicService: MockMusicService())
+    ))
 }
