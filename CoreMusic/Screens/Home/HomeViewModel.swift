@@ -37,7 +37,7 @@ protocol HomeViewModel: ObservableObject {
 final class HomeViewModelImpl: HomeViewModel {
     // MARK: - Properties
 
-    @Published var title = "Главное"
+    @Published var title = "Главная"
     @Published private(set) var recentMemories: [Memory] = []
     @Published private(set) var favoriteMemories: [Memory] = []
     @Published private(set) var cityTourMemories: [Memory] = []
