@@ -14,7 +14,9 @@ struct HomeFactory {
             router: router,
             musicService: externalDeps.musicService,
             playerService: externalDeps.playerService,
-            memoryRepository: externalDeps.memoryRepository
+            memoryRepository: externalDeps.memoryRepository,
+            notificationService: externalDeps.notificationService,
+            authService: externalDeps.authService
         )
 
         return HomeView(viewModel: viewModel)

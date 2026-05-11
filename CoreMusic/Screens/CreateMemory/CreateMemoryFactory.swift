@@ -16,7 +16,8 @@ struct CreateMemoryFactory {
             musicService: externalDeps.musicService,
             playerService: externalDeps.playerService,
             memoryRepository: externalDeps.memoryRepository,
-            locationSearchService: externalDeps.makeLocationSearchService()
+            locationSearchService: externalDeps.makeLocationSearchService(),
+            notificationService: externalDeps.notificationService
         )
 
         return CreateMemoryView(viewModel: viewModel)
@@ -32,6 +33,7 @@ struct CreateMemoryFactory {
             playerService: externalDeps.playerService,
             memoryRepository: externalDeps.memoryRepository,
             locationSearchService: externalDeps.makeLocationSearchService(),
+            notificationService: externalDeps.notificationService,
             editingMemory: memory
         )
 

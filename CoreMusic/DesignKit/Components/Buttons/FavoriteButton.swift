@@ -1,8 +1,13 @@
 import SwiftUI
 
 struct FavoriteButton: View {
+    // MARK: - Properties
+
     @Binding var isFavorite: Bool
     let onTap: () -> Void
+    var size: CGFloat = 16
+
+    // MARK: - Body
 
     var body: some View {
         Button {
@@ -21,6 +26,4 @@ struct FavoriteButton: View {
             newValue ? .success : .impact(weight: .light)
         }
     }
-    
-    private let size: CGFloat = 16
 }

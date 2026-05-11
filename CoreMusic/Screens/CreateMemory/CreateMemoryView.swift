@@ -297,7 +297,7 @@ struct CreateMemoryView<ViewModel: CreateMemoryViewModel>: View {
                 displayedComponents: [.date]
             )
             .datePickerStyle(.compact)
-            .tint(.primaryCm)
+            .tint(.primaryLightCm)
         }
     }
 
@@ -429,7 +429,8 @@ private enum Layout {
             musicService: MockMusicService(),
             playerService: PlayerServiceImpl(musicService: MockMusicService()),
             memoryRepository: SwiftDataMemoryRepository(modelContainer: ModelContainer()),
-            locationSearchService: MockLocationSearchService()
+            locationSearchService: MockLocationSearchService(),
+            notificationService: MockNotificationService()
         ))
     }
 }

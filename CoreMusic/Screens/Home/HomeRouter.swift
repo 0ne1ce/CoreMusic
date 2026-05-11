@@ -6,6 +6,7 @@ protocol HomeRouter: AnyObject {
     func openCarousel(startMemoryID: UUID, memoryIDs: [UUID])
     func openCreateMemory(songID: String)
     func openProfile(totalMemories: Int, favoriteMemories: Int, totalTracks: Int)
+    func openAuth()
 }
 
 @MainActor
@@ -36,6 +37,10 @@ final class HomeRouterImpl: HomeRouter {
             favoriteMemories: favoriteMemories,
             totalTracks: totalTracks
         ))
+    }
+
+    func openAuth() {
+        appRouter.presentCover(.auth)
     }
 
     // MARK: - Private properties

@@ -22,9 +22,6 @@ protocol AuthService: AnyObject {
     func handleAppleAuthorization(_ authorization: ASAuthorization, rawNonce: String) async throws
     func signOut() async throws
     func deleteAccount(authorizationCode: String?) async throws
-
-    // TODO: Remove applyStubUser() after adding FirebaseAuth + Sign in with Apple capability
-    func applyStubUser()
 }
 
 enum AuthError: LocalizedError {

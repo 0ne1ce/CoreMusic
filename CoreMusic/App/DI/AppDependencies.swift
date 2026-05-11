@@ -27,8 +27,8 @@ struct AppDependencies {
         let playerService = PlayerServiceImpl(musicService: musicService)
         let memoryRepository: MemoryRepository = SwiftDataMemoryRepository(modelContainer: modelContainer)
         let authService = AuthServiceImpl()
-        // TODO: Uncomment after adding Sign in with Apple capability
-        // authService.startListening()
+        let notificationService: NotificationService = NotificationServiceImpl()
+        authService.startListening()
         let makeLocationSearchService: @MainActor () -> LocationSearchService = {
             LocationSearchServiceImpl()
         }
@@ -38,7 +38,8 @@ struct AppDependencies {
                 musicService: musicService,
                 playerService: playerService,
                 memoryRepository: memoryRepository,
-                makeLocationSearchService: makeLocationSearchService
+                makeLocationSearchService: makeLocationSearchService,
+                notificationService: notificationService
             )
         )
         let trackPlayerFactory = TrackPlayerFactory(
@@ -61,7 +62,9 @@ struct AppDependencies {
             appRouter: appRouter,
             musicService: musicService,
             playerService: playerService,
-            memoryRepository: memoryRepository
+            memoryRepository: memoryRepository,
+            notificationService: notificationService,
+            authService: authService
         )
 
         return AppDependencies(
@@ -86,6 +89,7 @@ struct AppDependencies {
         let playerService = PlayerServiceImpl(musicService: musicService)
         let memoryRepository: MemoryRepository = SwiftDataMemoryRepository(modelContainer: modelContainer)
         let authService = AuthServiceImpl()
+        let notificationService: NotificationService = MockNotificationService()
         let makeLocationSearchService: @MainActor () -> LocationSearchService = {
             MockLocationSearchService()
         }
@@ -95,7 +99,8 @@ struct AppDependencies {
                 musicService: musicService,
                 playerService: playerService,
                 memoryRepository: memoryRepository,
-                makeLocationSearchService: makeLocationSearchService
+                makeLocationSearchService: makeLocationSearchService,
+                notificationService: notificationService
             )
         )
         let trackPlayerFactory = TrackPlayerFactory(
@@ -118,7 +123,9 @@ struct AppDependencies {
             appRouter: appRouter,
             musicService: musicService,
             playerService: playerService,
-            memoryRepository: memoryRepository
+            memoryRepository: memoryRepository,
+            notificationService: notificationService,
+            authService: authService
         )
 
         return AppDependencies(
@@ -142,7 +149,9 @@ struct AppDependencies {
         appRouter: AppRouter,
         musicService: any MusicService,
         playerService: PlayerServiceImpl,
-        memoryRepository: MemoryRepository
+        memoryRepository: MemoryRepository,
+        notificationService: NotificationService,
+        authService: AuthServiceImpl
     ) -> RootScreenFactories {
         RootScreenFactories(
             homeFactory: HomeFactory(
@@ -150,7 +159,9 @@ struct AppDependencies {
                     appRouter: appRouter,
                     musicService: musicService,
                     playerService: playerService,
-                    memoryRepository: memoryRepository
+                    memoryRepository: memoryRepository,
+                    notificationService: notificationService,
+                    authService: authService
                 )
             ),
             libraryFactory: LibraryFactory(

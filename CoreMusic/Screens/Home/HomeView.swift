@@ -46,6 +46,7 @@ struct HomeView<ViewModel: HomeViewModel>: View {
     private var contentView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.xxl) {
+                onThisDaySection
                 recentMemoriesSection
                 recentTracksSection
                 cityTourSection
@@ -77,6 +78,58 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 )
             }
         }
+    }
+
+    @ViewBuilder
+    private var onThisDaySection: some View {
+        if !viewModel.onThisDayMemories.isEmpty {
+            VStack(spacing: Spacing.md) {
+                onThisDayHeader
+                onThisDayCarousel
+            }
+        }
+    }
+
+    private var onThisDayHeader: some View {
+        VStack(spacing: Spacing.xs) {
+            Text("В этот день")
+                .font(.cmSectionTitle)
+                .foregroundStyle(Color.cmTextPrimary)
+
+            Text(Self.todayDateString)
+                .font(.cmSecondary)
+                .foregroundStyle(Color.cmTextSecondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var onThisDayCarousel: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.md) {
+                ForEach(viewModel.onThisDayMemories) { memory in
+                    Button {
+                        handleOnThisDayTap(memory)
+                    } label: {
+                        MemoryCardView(
+                            memory: memory,
+                            onFavoriteTap: { viewModel.onFavoriteTap(memory) },
+                            yearBadgeText: Self.yearString(from: memory.date),
+                            subtitle: memory.artistName + " — " + memory.songTitle,
+                            cardAspectRatio: Layout.onThisDayAspectRatio,
+                            showDimOverlay: true,
+                            favoriteButtonSize: Layout.onThisDayFavoriteSize
+                        )
+                        .containerRelativeFrame(.horizontal)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .scrollTargetBehavior(.viewAligned)
+        .safeAreaPadding(.horizontal, Spacing.lg + Spacing.sm)
+        .padding(.leading, -Spacing.sm)
+        .scrollIndicators(.hidden)
     }
 
     @ViewBuilder
@@ -242,6 +295,23 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         .frame(height: Layout.memoryCardSize)
     }
 
+    // MARK: - Private methods
+
+    private func handleOnThisDayTap(_ memory: Memory) {
+        viewModel.onMemoryTap(memory, in: .onThisDay)
+    }
+
+    private static var todayDateString: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.setLocalizedDateFormatFromTemplate("d MMMM")
+        return formatter.string(from: Date())
+    }
+
+    private static func yearString(from date: Date) -> String {
+        String(Calendar.current.component(.year, from: date))
+    }
+
     private var generalEmptyState: some View {
         EmptyStateView(
             systemImage: "music.note.house",
@@ -257,4 +327,6 @@ private enum Layout {
     static let memoryCardSize: CGFloat = 224
     static let tracksPerPage = 3
     static let bottomSpacer: CGFloat = 40
+    static let onThisDayAspectRatio: CGFloat = 4.0 / 5.0
+    static let onThisDayFavoriteSize: CGFloat = 22
 }

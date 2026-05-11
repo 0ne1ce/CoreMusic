@@ -8,8 +8,8 @@ struct AuthFactory {
 
     // MARK: - Methods
 
-    func makeAuthScreen() -> some View {
+    func makeAuthScreen(onSkip: (() -> Void)? = nil) -> some View {
         let viewModel = AuthViewModelImpl(authService: externalDeps.authService)
-        return AuthView(viewModel: viewModel)
+        return AuthView(viewModel: viewModel, onSkip: onSkip)
     }
 }

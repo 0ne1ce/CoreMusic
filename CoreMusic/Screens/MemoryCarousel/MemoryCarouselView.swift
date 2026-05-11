@@ -179,7 +179,8 @@ struct MemoryCarouselView<ViewModel: MemoryCarouselViewModel>: View {
                     get: { memory.isFavorite },
                     set: { _ in }
                 ),
-                onTap: { viewModel.onFavoriteTap(memory) }
+                onTap: { viewModel.onFavoriteTap(memory) },
+                size: Layout.favoriteButtonSize
             )
         }
     }
@@ -320,4 +321,5 @@ private enum Layout {
     static let editButtonSize: CGFloat = 32
     static let gradientPrimary: Color = .cmPrimary
     static let gradientSecondary: Color = .cmPrimaryLight
+    static let favoriteButtonSize: CGFloat = 22
 }

@@ -13,7 +13,4 @@ protocol AuthViewModel: ObservableObject {
     func prepareAppleRequest(_ request: ASAuthorizationAppleIDRequest)
     func handleAppleResult(_ result: Result<ASAuthorization, Error>) async
     func dismissError()
-
-    // TODO: Remove signInStub() after adding Sign in with Apple capability
-    func signInStub() async
 }

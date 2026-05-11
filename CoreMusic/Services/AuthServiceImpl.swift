@@ -14,28 +14,15 @@ final class AuthServiceImpl: ObservableObject, AuthService {
     // MARK: - Methods
 
     func startListening() {
-        // TODO: Uncomment after adding Sign in with Apple capability (check applyStubUser)
-        // guard authStateHandle == nil else {
-        //     return
-        // }
-        //
-        // authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
-        //     Task { @MainActor [weak self] in
-        //         self?.applyFirebaseUser(firebaseUser)
-        //     }
-        // }
-    }
+        guard authStateHandle == nil else {
+            return
+        }
 
-    func applyStubUser() {
-        // TODO: Remove after adding Sign in with Apple capability and FirebaseAuth.
-        let stub = AuthUser(
-            id: "stub-user",
-            appleUserID: nil,
-            email: "stub@coremusic.local",
-            displayName: "Stub User"
-        )
-        currentUser = stub
-        authState = .signedIn(stub)
+        authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
+            Task { @MainActor [weak self] in
+                self?.applyFirebaseUser(firebaseUser)
+            }
+        }
     }
 
     func makeNonce() -> String {
@@ -69,41 +56,33 @@ final class AuthServiceImpl: ObservableObject, AuthService {
 
         authState = .authenticating
 
-        // TODO: Uncomment after adding Sign in with Apple capability
-        // let firebaseCredential = OAuthProvider.appleCredential(
-        //     withIDToken: idTokenString,
-        //     rawNonce: rawNonce,
-        //     fullName: credential.fullName
-        // )
-        //
-        // do {
-        //     let result = try await Auth.auth().signIn(with: firebaseCredential)
-        //     applyFirebaseUser(result.user, appleUserID: credential.user, fallbackName: displayName(from: credential.fullName))
-        // }
-        // catch {
-        //     authState = .failed(error.localizedDescription)
-        //     throw AuthError.signInFailed(error.localizedDescription)
-        // }
+        let firebaseCredential = OAuthProvider.appleCredential(
+            withIDToken: idTokenString,
+            rawNonce: rawNonce,
+            fullName: credential.fullName
+        )
 
-        _ = idTokenString
-        _ = rawNonce
-        applyStubUser()
+        do {
+            let result = try await Auth.auth().signIn(with: firebaseCredential)
+            applyFirebaseUser(result.user, appleUserID: credential.user, fallbackName: displayName(from: credential.fullName))
+        }
+        catch {
+            authState = .failed(error.localizedDescription)
+            throw AuthError.signInFailed(error.localizedDescription)
+        }
     }
 
     func signOut() async throws {
-        // TODO: Uncomment after adding FirebaseAuth.
-        // try Auth.auth().signOut()
+        try Auth.auth().signOut()
         currentUser = nil
         authState = .signedOut
     }
 
     func deleteAccount(authorizationCode: String?) async throws {
-        //// TODO: Uncomment after adding FirebaseAuth.
-        // if let authorizationCode {
-        //     try await Auth.auth().revokeToken(withAuthorizationCode: authorizationCode)
-        // }
-        // try await Auth.auth().currentUser?.delete()
-        _ = authorizationCode
+        if let authorizationCode {
+            try await Auth.auth().revokeToken(withAuthorizationCode: authorizationCode)
+        }
+        try await Auth.auth().currentUser?.delete()
         currentUser = nil
         authState = .signedOut
     }

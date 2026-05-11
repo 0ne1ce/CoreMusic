@@ -7,6 +7,7 @@ enum HomeSection {
     case recentTracks
     case favorites
     case cityTour
+    case onThisDay
 }
 
 @MainActor
@@ -17,6 +18,7 @@ protocol HomeViewModel: ObservableObject {
     var recentMemories: [Memory] { get }
     var favoriteMemories: [Memory] { get }
     var cityTourMemories: [Memory] { get }
+    var onThisDayMemories: [Memory] { get }
     var recentTracks: [LibraryTrack] { get }
     var isLoadingTracks: Bool { get }
     var hasAnyContent: Bool { get }
@@ -41,6 +43,7 @@ final class HomeViewModelImpl: HomeViewModel {
     @Published private(set) var recentMemories: [Memory] = []
     @Published private(set) var favoriteMemories: [Memory] = []
     @Published private(set) var cityTourMemories: [Memory] = []
+    @Published private(set) var onThisDayMemories: [Memory] = []
     @Published private(set) var recentTracks: [LibraryTrack] = []
     @Published private(set) var isLoadingTracks = false
     private(set) var totalTracksCount = 0
@@ -50,6 +53,7 @@ final class HomeViewModelImpl: HomeViewModel {
             || !recentTracks.isEmpty
             || !favoriteMemories.isEmpty
             || !cityTourMemories.isEmpty
+            || !onThisDayMemories.isEmpty
             || isLoadingTracks
     }
 
@@ -59,12 +63,16 @@ final class HomeViewModelImpl: HomeViewModel {
         router: HomeRouter,
         musicService: any MusicService,
         playerService: PlayerServiceImpl,
-        memoryRepository: MemoryRepository
+        memoryRepository: MemoryRepository,
+        notificationService: NotificationService,
+        authService: AuthServiceImpl
     ) {
         self.router = router
         self.musicService = musicService
         self.playerService = playerService
         self.memoryRepository = memoryRepository
+        self.notificationService = notificationService
+        self.authService = authService
 
         playerService.objectWillChange
             .receive(on: RunLoop.main)
@@ -78,6 +86,7 @@ final class HomeViewModelImpl: HomeViewModel {
 
     func onAppear() async {
         loadMemories()
+        await setupNotificationsIfNeeded()
 
         if MusicAuthorization.currentStatus == .authorized, recentTracks.isEmpty {
             await loadTracks()
@@ -85,6 +94,11 @@ final class HomeViewModelImpl: HomeViewModel {
     }
 
     func onProfileTap() {
+        guard authService.currentUser != nil else {
+            router.openAuth()
+            return
+        }
+
         let allMemories: [Memory]
         do { allMemories = try memoryRepository.fetchMemories() }
         catch { allMemories = [] }
@@ -98,7 +112,7 @@ final class HomeViewModelImpl: HomeViewModel {
 
     func onSectionTap(_ section: HomeSection) {
         switch section {
-        case .recentMemories, .favorites, .cityTour:
+        case .recentMemories, .favorites, .cityTour, .onThisDay:
             router.goToTab(.memories)
         case .recentTracks:
             router.goToTab(.library)
@@ -114,6 +128,8 @@ final class HomeViewModelImpl: HomeViewModel {
             ids = favoriteMemories.map(\.id)
         case .cityTour:
             ids = cityTourMemories.map(\.id)
+        case .onThisDay:
+            ids = onThisDayMemories.map(\.id)
         case .recentTracks:
             return
         }
@@ -146,7 +162,10 @@ final class HomeViewModelImpl: HomeViewModel {
     private let musicService: any MusicService
     private let playerService: PlayerServiceImpl
     private let memoryRepository: MemoryRepository
+    private let notificationService: NotificationService
+    private let authService: AuthServiceImpl
     private var cancellables = Set<AnyCancellable>()
+    private var hasRequestedNotificationAuth = false
 
     // MARK: - Private methods
 
@@ -160,8 +179,44 @@ final class HomeViewModelImpl: HomeViewModel {
                     .filter { $0.locationName?.isEmpty == false }
                     .prefix(Constants.maxMemories)
             )
+            onThisDayMemories = Self.filterOnThisDay(from: all)
         }
         catch { }
+    }
+
+    private func setupNotificationsIfNeeded() async {
+        if !hasRequestedNotificationAuth {
+            hasRequestedNotificationAuth = true
+            let granted = await notificationService.requestAuthorization()
+            guard granted else { return }
+        }
+
+        rescheduleNotifications()
+    }
+
+    private func rescheduleNotifications() {
+        let all: [Memory]
+        do { all = try memoryRepository.fetchMemories() }
+        catch { return }
+        notificationService.rescheduleOnThisDayNotifications(memories: all)
+    }
+
+    private static func filterOnThisDay(from memories: [Memory]) -> [Memory] {
+        let calendar = Calendar.current
+        let now = Date()
+        let today = calendar.dateComponents([.month, .day], from: now)
+        let currentYear = calendar.component(.year, from: now)
+
+        let matched = memories
+            .filter { memory in
+                let comp = calendar.dateComponents([.month, .day, .year], from: memory.date)
+                return comp.month == today.month
+                    && comp.day == today.day
+                    && comp.year != currentYear
+            }
+            .sorted { $0.date > $1.date }
+
+        return Array(matched.prefix(Constants.maxMemories))
     }
 
     private func loadTracks() async {

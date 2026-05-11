@@ -7,9 +7,9 @@ struct MainTabView: View {
     let createMemoryFactory: CreateMemoryFactory
     let trackPlayerFactory: TrackPlayerFactory
     let memoryCarouselFactory: MemoryCarouselFactory
+    let authFactory: AuthFactory
 
-    @Environment(AppRouter.self) private var appRouter
-    @EnvironmentObject private var playerService: PlayerServiceImpl
+    // MARK: - Body
 
     var body: some View {
         @Bindable var appRouter = appRouter
@@ -56,6 +56,13 @@ struct MainTabView: View {
         }
     }
 
+    // MARK: - Private properties
+
+    @Environment(AppRouter.self) private var appRouter
+    @EnvironmentObject private var playerService: PlayerServiceImpl
+    @EnvironmentObject private var authService: AuthServiceImpl
+    @AppStorage("hasCompletedAuth") private var hasCompletedAuth = false
+
     // MARK: - Private methods
 
     @ViewBuilder
@@ -87,9 +94,16 @@ struct MainTabView: View {
             trackPlayerFactory.makeTrackPlayerScreen()
         case let .memoryCarousel(startMemoryID, memoryIDs):
             memoryCarouselFactory.makeMemoryCarouselScreen(startMemoryID: startMemoryID, memoryIDs: memoryIDs)
+        case .auth:
+            authFactory.makeAuthScreen(onSkip: handleAuthComplete)
+                .onChange(of: authService.currentUser) { _, newUser in
+                    if newUser != nil {
+                        handleAuthComplete()
+                    }
+                }
         }
     }
-    
+
     @ViewBuilder
     private func sheetView(for sheet: AppSheet) -> some View {
         switch sheet {
@@ -110,6 +124,11 @@ struct MainTabView: View {
         }
 
         appRouter.presentSheet(.player(songID: currentTrackID))
+    }
+
+    private func handleAuthComplete() {
+        hasCompletedAuth = true
+        appRouter.dismissCover()
     }
 }
 

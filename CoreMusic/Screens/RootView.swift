@@ -15,15 +15,13 @@ struct RootView: View {
         if !hasCompletedOnboarding {
             OnboardingFlowView(onFinish: { hasCompletedOnboarding = true })
         }
-        else if authService.currentUser == nil {
-            authFactory.makeAuthScreen()
-        }
         else {
             MainTabView(
                 factories: factories,
                 createMemoryFactory: createMemoryFactory,
                 trackPlayerFactory: trackPlayerFactory,
-                memoryCarouselFactory: memoryCarouselFactory
+                memoryCarouselFactory: memoryCarouselFactory,
+                authFactory: authFactory
             )
         }
     }
@@ -31,5 +29,4 @@ struct RootView: View {
     // MARK: - Private properties
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @EnvironmentObject private var authService: AuthServiceImpl
 }

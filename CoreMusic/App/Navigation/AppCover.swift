@@ -5,6 +5,7 @@ enum AppCover: Identifiable, Hashable {
     case editMemory(memoryID: UUID)
     case player(songID: String)
     case memoryCarousel(startMemoryID: UUID, memoryIDs: [UUID]?)
+    case auth
 
     var id: Self { self }
 }

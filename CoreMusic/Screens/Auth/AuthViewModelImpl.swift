@@ -37,17 +37,6 @@ final class AuthViewModelImpl: AuthViewModel {
         errorMessage = nil
     }
 
-    // TODO: Removw signInStub() after adding Sign in with Apple capability
-    func signInStub() async {
-        isAuthenticating = true
-        defer {
-            isAuthenticating = false
-        }
-
-        try? await Task.sleep(for: .milliseconds(400))
-        authService.applyStubUser()
-    }
-
     // MARK: - Private properties
 
     private let authService: any AuthService

@@ -42,6 +42,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
         playerService: PlayerService,
         memoryRepository: MemoryRepository,
         locationSearchService: LocationSearchService,
+        notificationService: NotificationService,
         editingMemory: Memory? = nil
     ) {
         self.router = router
@@ -50,6 +51,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
         self.playerService = playerService
         self.memoryRepository = memoryRepository
         self.locationSearchService = locationSearchService
+        self.notificationService = notificationService
         self.editingMemory = editingMemory
         self.isEditMode = editingMemory != nil
         self.navigationTitle = editingMemory != nil ? "Редактировать" : "Новое воспоминание"
@@ -134,6 +136,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
             else {
                 try memoryRepository.saveMemory(draft)
             }
+            rescheduleNotifications()
             router.close()
         }
         catch {
@@ -150,6 +153,7 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
 
         do {
             try memoryRepository.deleteMemory(editingMemory)
+            rescheduleNotifications()
             router.dismissAll()
         }
         catch {
@@ -199,11 +203,19 @@ final class CreateMemoryViewModelImpl: CreateMemoryViewModel {
     private let playerService: PlayerService
     private let memoryRepository: MemoryRepository
     private let locationSearchService: LocationSearchService
+    private let notificationService: NotificationService
     private let editingMemory: Memory?
     private let userQuerySubject = PassthroughSubject<String, Never>()
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private methods
+
+    private func rescheduleNotifications() {
+        let all: [Memory]
+        do { all = try memoryRepository.fetchMemories() }
+        catch { return }
+        notificationService.rescheduleOnThisDayNotifications(memories: all)
+    }
 
     private func prefill(from memory: Memory) {
         memoryTitle = memory.memoryTitle

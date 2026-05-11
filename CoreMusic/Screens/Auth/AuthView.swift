@@ -8,40 +8,52 @@ struct AuthView<ViewModel: AuthViewModel>: View {
         VStack(spacing: 0) {
             Spacer()
 
-            Text("Импортируйте\nсвою медиатеку")
-                .font(.largeTitle.bold())
-                .multilineTextAlignment(.center)
+            VStack(spacing: Spacing.md) {
+                Text("Войдите\nв аккаунт")
+                    .font(.largeTitle.bold())
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.cmTextPrimary)
+
+                Text("Чтобы сохранять воспоминания\nна разных устройствах")
+                    .font(.cmBody)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.cmTextSecondary)
+            }
+
+            Spacer()
+
+            Image.cmLogo
+                .resizable()
+                .renderingMode(.template)
+                .scaledToFit()
+                .frame(width: Layout.iconSize, height: Layout.iconSize)
                 .foregroundStyle(Color.cmTextPrimary)
 
             Spacer()
-
-            Image.cmAppleMusicLogo
-                .resizable()
-                .scaledToFit()
-                .frame(width: Layout.iconSize, height: Layout.iconSize)
-                .clipShape(RoundedRectangle(cornerRadius: Layout.iconCornerRadius))
-
-            Spacer()
             Spacer()
 
-            // TODO: Uncomment after adding Sign in with Apple capability
-            // SignInWithAppleButton(
-            //     .signIn,
-            //     onRequest: { request in
-            //         viewModel.prepareAppleRequest(request)
-            //     },
-            //     onCompletion: { result in
-            //         Task { await viewModel.handleAppleResult(result) }
-            //     }
-            // )
-            // .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-            // .frame(height: Layout.buttonHeight)
-            // .clipShape(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius))
-            // .padding(.horizontal, Spacing.lg)
-            // .disabled(viewModel.isAuthenticating)
-            stubSignInButton
-                .padding(.horizontal, Spacing.lg)
+            VStack(spacing: Spacing.sm) {
+                SignInWithAppleButton(
+                    .signIn,
+                    onRequest: { request in
+                        viewModel.prepareAppleRequest(request)
+                    },
+                    onCompletion: { result in
+                        Task { await viewModel.handleAppleResult(result) }
+                    }
+                )
+                .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                .frame(height: Layout.buttonHeight)
+                .clipShape(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius))
                 .disabled(viewModel.isAuthenticating)
+
+                if let onSkip {
+                    Button("Пропустить", action: onSkip)
+                        .buttonStyle(SecondaryButtonStyle())
+                        .disabled(viewModel.isAuthenticating)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
 
             if viewModel.isAuthenticating {
                 ProgressView()
@@ -67,14 +79,16 @@ struct AuthView<ViewModel: AuthViewModel>: View {
 
     // MARK: - Initializer
 
-    init(viewModel: ViewModel) {
+    init(viewModel: ViewModel, onSkip: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: viewModel)
+        self.onSkip = onSkip
     }
 
     // MARK: - Private properties
 
     @StateObject private var viewModel: ViewModel
     @Environment(\.colorScheme) private var colorScheme
+    private let onSkip: (() -> Void)?
 
     // MARK: - Private methods
 
@@ -89,29 +103,6 @@ struct AuthView<ViewModel: AuthViewModel>: View {
         )
     }
 
-    // TODO: Remove stubSignInButton after adding SignInWithAppleButton
-    private var stubSignInButton: some View {
-        let isDark = colorScheme == .dark
-        let background: Color = isDark ? .white : .black
-        let foreground: Color = isDark ? .black : .white
-
-        return Button {
-            Task { await viewModel.signInStub() }
-        } label: {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: "applelogo")
-                    .font(.system(size: 18, weight: .medium))
-                Text("Sign in with Apple")
-                    .font(.system(size: 19, weight: .medium))
-            }
-            .foregroundStyle(foreground)
-            .frame(maxWidth: .infinity)
-            .frame(height: Layout.buttonHeight)
-            .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: Layout.buttonCornerRadius))
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 // MARK: - Layout

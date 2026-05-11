@@ -21,9 +21,6 @@ struct ProfileView: View {
                 .padding(.top, Spacing.xl)
             }
             .background(Color.cmBackgroundPrimary)
-            .onTapGesture {
-                isNameFocused = false
-            }
             .navigationTitle("Профиль")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -34,29 +31,34 @@ struct ProfileView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                Button(action: { }) {
-                    HStack(spacing: Spacing.sm) {
-                        Image(systemName: "rectangle.portrait.and.arrow.right.fill")
-                        Text("Выйти из аккаунта")
-                    }
-                    .font(.cmBody.weight(.medium))
-                    .foregroundStyle(.textPrimary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                }
-                .buttonStyle(.plain)
+                signOutButton
             }
-            .ignoresSafeArea(.keyboard)
+            .alert(
+                "Ошибка",
+                isPresented: $showingError,
+                actions: {
+                    Button("OK", role: .cancel) {}
+                },
+                message: {
+                    Text(errorMessage)
+                }
+            )
         }
     }
 
     // MARK: - Private properties
 
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("profile_name") private var profileName = "Меломан"
-    @FocusState private var isNameFocused: Bool
+    @Environment(AppRouter.self) private var appRouter
+    @EnvironmentObject private var authService: AuthServiceImpl
+    @State private var showingError = false
+    @State private var errorMessage = ""
 
     // MARK: - Private views
+
+    private var displayName: String {
+        authService.currentUser?.displayName ?? "Пользователь"
+    }
 
     private var avatarSection: some View {
         VStack(spacing: Spacing.md) {
@@ -69,16 +71,25 @@ struct ProfileView: View {
                         .frame(width: Layout.avatarBgSize, height: Layout.avatarBgSize)
                 )
 
-            TextField("Имя", text: $profileName)
+            Text(displayName)
                 .font(.cmSectionTitle)
                 .foregroundStyle(Color.cmTextPrimary)
                 .multilineTextAlignment(.center)
-                .focused($isNameFocused)
-                .tint(.cmPrimaryLight)
         }
-        .onTapGesture {
-            isNameFocused = false
+    }
+
+    private var signOutButton: some View {
+        Button(action: handleSignOut) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "rectangle.portrait.and.arrow.right.fill")
+                Text("Выйти из аккаунта")
+            }
+            .font(.cmBody.weight(.medium))
+            .foregroundStyle(.textPrimary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.md)
         }
+        .buttonStyle(.plain)
     }
 
     private var statsSection: some View {
@@ -134,6 +145,23 @@ struct ProfileView: View {
                 .font(.system(size: 18))
                 .foregroundStyle(color)
                 .offset(x: 6, y: -4)
+        }
+    }
+
+    // MARK: - Private methods
+
+    private func handleSignOut() {
+        Task {
+            do {
+                try await authService.signOut()
+                dismiss()
+                try? await Task.sleep(for: .milliseconds(300))
+                appRouter.presentCover(.auth)
+            }
+            catch {
+                errorMessage = error.localizedDescription
+                showingError = true
+            }
         }
     }
 }
