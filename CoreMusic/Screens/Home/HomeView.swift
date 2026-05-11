@@ -27,8 +27,12 @@ struct HomeView<ViewModel: HomeViewModel>: View {
         .task { await viewModel.onAppear() }
         .onChange(of: appRouter.presentedCover) { _, newValue in
             if newValue == nil {
+                viewModel.markSyncInProgress()
                 Task { await viewModel.onAppear() }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .memorySyncDidComplete)) { _ in
+            viewModel.onSyncCompleted()
         }
     }
 
@@ -68,7 +72,10 @@ struct HomeView<ViewModel: HomeViewModel>: View {
             }
             .padding(.horizontal, Spacing.lg)
 
-            if viewModel.recentMemories.isEmpty {
+            if viewModel.isSyncingMemories {
+                memoriesLoadingPlaceholder
+            }
+            else if viewModel.recentMemories.isEmpty {
                 memoriesEmptyState
             }
             else {
@@ -279,6 +286,19 @@ struct HomeView<ViewModel: HomeViewModel>: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    private var memoriesLoadingPlaceholder: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.md) {
+                ForEach(0..<5, id: \.self) { _ in
+                    MemoryCardSkeleton()
+                        .frame(width: Layout.memoryCardSize, height: Layout.memoryCardSize)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+        .scrollIndicators(.hidden)
     }
 
     private var memoriesEmptyState: some View {

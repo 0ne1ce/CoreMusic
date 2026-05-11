@@ -12,6 +12,7 @@ protocol MemoriesViewModel: ObservableObject {
     var searchInput: String { get set }
     var isLoading: Bool { get }
     var errorMessage: String? { get }
+    var showDeleteConfirmation: Bool { get set }
 
     // MARK: - Methods
 
@@ -20,6 +21,7 @@ protocol MemoriesViewModel: ObservableObject {
     func onMemoryTap(_ memory: Memory)
     func onFavoriteTap(_ memory: Memory)
     func onDeleteTap(_ memory: Memory)
+    func confirmDelete()
 }
 
 @MainActor
@@ -31,6 +33,8 @@ final class MemoriesViewModelImpl: MemoriesViewModel {
     @Published var searchInput: String = ""
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
+    @Published var showDeleteConfirmation: Bool = false
+    @Published private(set) var memoryForDeletion: Memory?
 
     var displayedMemories: [Memory] {
         let input = searchInput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -82,7 +86,13 @@ final class MemoriesViewModelImpl: MemoriesViewModel {
     }
 
     func onDeleteTap(_ memory: Memory) {
+        showDeleteConfirmation = true
+        memoryForDeletion = memory
+    }
+    
+    func confirmDelete() {
         do {
+            guard let memory = memoryForDeletion else { return }
             try memoryRepository.deleteMemory(memory)
             withAnimation {
                 memories.removeAll { $0.id == memory.id }

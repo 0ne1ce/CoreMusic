@@ -28,8 +28,10 @@ final class SwiftDataMemoryRepository: MemoryRepository {
         return try context.fetch(descriptor).first
     }
 
-    func saveMemory(_ draft: MemoryDraft) throws {
+    @discardableResult
+    func saveMemory(_ draft: MemoryDraft) throws -> Memory {
         let memory = Memory(
+            id: draft.id ?? UUID(),
             songID: draft.songID,
             songTitle: draft.songTitle,
             artistName: draft.artistName,
@@ -45,9 +47,14 @@ final class SwiftDataMemoryRepository: MemoryRepository {
 
         context.insert(memory)
         try context.save()
+        return memory
     }
 
     func updateMemory(_ memory: Memory, with draft: MemoryDraft) throws {
+        if draft.photoData != memory.photoData {
+            memory.remotePhotoURL = nil
+        }
+
         memory.memoryTitle = draft.memoryTitle
         memory.note = draft.note
         memory.date = draft.date
@@ -55,6 +62,7 @@ final class SwiftDataMemoryRepository: MemoryRepository {
         memory.photoData = draft.photoData
         memory.tagsStorage = draft.tags.joined(separator: "|")
         memory.isFavorite = draft.isFavorite
+        memory.lastModifiedAt = Date()
         try context.save()
     }
 
@@ -65,6 +73,7 @@ final class SwiftDataMemoryRepository: MemoryRepository {
 
     func toggleFavorite(_ memory: Memory) throws {
         memory.isFavorite.toggle()
+        memory.lastModifiedAt = Date()
         try context.save()
     }
 

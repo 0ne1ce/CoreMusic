@@ -21,11 +21,14 @@ protocol HomeViewModel: ObservableObject {
     var onThisDayMemories: [Memory] { get }
     var recentTracks: [LibraryTrack] { get }
     var isLoadingTracks: Bool { get }
+    var isSyncingMemories: Bool { get }
     var hasAnyContent: Bool { get }
 
     // MARK: - Methods
 
     func onAppear() async
+    func onSyncCompleted()
+    func markSyncInProgress()
     func onProfileTap()
     func onSectionTap(_ section: HomeSection)
     func onMemoryTap(_ memory: Memory, in section: HomeSection)
@@ -46,6 +49,7 @@ final class HomeViewModelImpl: HomeViewModel {
     @Published private(set) var onThisDayMemories: [Memory] = []
     @Published private(set) var recentTracks: [LibraryTrack] = []
     @Published private(set) var isLoadingTracks = false
+    @Published private(set) var isSyncingMemories = false
     private(set) var totalTracksCount = 0
 
     var hasAnyContent: Bool {
@@ -55,6 +59,7 @@ final class HomeViewModelImpl: HomeViewModel {
             || !cityTourMemories.isEmpty
             || !onThisDayMemories.isEmpty
             || isLoadingTracks
+            || isSyncingMemories
     }
 
     // MARK: - Initializer
@@ -91,6 +96,18 @@ final class HomeViewModelImpl: HomeViewModel {
         if MusicAuthorization.currentStatus == .authorized, recentTracks.isEmpty {
             await loadTracks()
         }
+    }
+
+    func markSyncInProgress() {
+        guard authService.currentUser != nil, recentMemories.isEmpty else {
+            return
+        }
+        isSyncingMemories = true
+    }
+
+    func onSyncCompleted() {
+        loadMemories()
+        isSyncingMemories = false
     }
 
     func onProfileTap() {
@@ -180,8 +197,14 @@ final class HomeViewModelImpl: HomeViewModel {
                     .prefix(Constants.maxMemories)
             )
             onThisDayMemories = Self.filterOnThisDay(from: all)
+
+            if !recentMemories.isEmpty {
+                isSyncingMemories = false
+            }
         }
-        catch { }
+        catch {
+            isSyncingMemories = false
+        }
     }
 
     private func setupNotificationsIfNeeded() async {

@@ -18,6 +18,8 @@ final class Memory {
     var photoData: Data?
     var tagsStorage: String
     var isFavorite: Bool
+    var lastModifiedAt: Date = Date()
+    var remotePhotoURL: String?
 
     // MARK: - Initializer
 
@@ -34,7 +36,9 @@ final class Memory {
         locationName: String?,
         photoData: Data?,
         tags: [String],
-        isFavorite: Bool
+        isFavorite: Bool,
+        lastModifiedAt: Date = Date(),
+        remotePhotoURL: String? = nil
     ) {
         self.id = id
         self.songID = songID
@@ -49,5 +53,7 @@ final class Memory {
         self.photoData = photoData
         self.tagsStorage = tags.joined(separator: "|")
         self.isFavorite = isFavorite
+        self.lastModifiedAt = lastModifiedAt
+        self.remotePhotoURL = remotePhotoURL
     }
 }

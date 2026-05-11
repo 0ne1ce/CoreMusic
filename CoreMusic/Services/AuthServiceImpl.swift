@@ -20,7 +20,11 @@ final class AuthServiceImpl: ObservableObject, AuthService {
 
         authStateHandle = Auth.auth().addStateDidChangeListener { [weak self] _, firebaseUser in
             Task { @MainActor [weak self] in
-                self?.applyFirebaseUser(firebaseUser)
+                guard let self else { return }
+                if firebaseUser != nil, self.currentUser?.id == firebaseUser?.uid {
+                    return
+                }
+                self.applyFirebaseUser(firebaseUser)
             }
         }
     }

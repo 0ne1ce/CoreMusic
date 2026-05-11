@@ -17,6 +17,9 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
                     viewModel.onAppear()
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .memorySyncDidComplete)) { _ in
+                viewModel.onAppear()
+            }
     }
 
     // MARK: - Initializer
@@ -29,6 +32,7 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
 
     @StateObject private var viewModel: ViewModel
     @Environment(AppRouter.self) private var appRouter
+    @State private var deletingMemoryID: UUID?
 
     private let columns = [
         GridItem(.flexible(), spacing: Spacing.sm),
@@ -87,37 +91,37 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
                     EmptyStateView(systemImage: "magnifyingglass", title: "Ничего не найдено", subtitle: "Попробуйте изменить запрос")
                 }
                 else {
-                LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                    ForEach(Array(viewModel.displayedMemories.enumerated()), id: \.offset) { index, memory in
-                        Button {
-                            viewModel.onMemoryTap(memory)
-                        } label: {
-                            MemoryCardView(
-                                memory: memory,
-                                onFavoriteTap: { viewModel.onFavoriteTap(memory) }
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .contextMenu {
+                    LazyVGrid(columns: columns, spacing: Spacing.sm) {
+                        ForEach(Array(viewModel.displayedMemories.enumerated()), id: \.element.id) { index, memory in
                             Button {
-                                viewModel.onFavoriteTap(memory)
+                                viewModel.onMemoryTap(memory)
                             } label: {
-                                Label(
-                                    memory.isFavorite ? "Убрать из избранного" : "В избранное",
-                                    systemImage: memory.isFavorite ? "heart.slash" : "heart"
+                                MemoryCardView(
+                                    memory: memory,
+                                    onFavoriteTap: { viewModel.onFavoriteTap(memory) }
                                 )
                             }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button {
+                                    viewModel.onFavoriteTap(memory)
+                                } label: {
+                                    Label(
+                                        memory.isFavorite ? "Убрать из избранного" : "В избранное",
+                                        systemImage: memory.isFavorite ? "heart.slash" : "heart"
+                                    )
+                                }
 
-                            Button(role: .destructive) {
-                                viewModel.onDeleteTap(memory)
-                            } label: {
-                                Label("Удалить", systemImage: "trash")
+                                Button(role: .destructive) {
+                                    handleDelete(memory)
+                                } label: {
+                                    Label("Удалить", systemImage: "trash")
+                                }
                             }
+                        .opacity(memory.id == deletingMemoryID ? 0 : 1)
                         }
-                        .zIndex(Double(index))
                     }
-                }
-                .padding(.horizontal, Spacing.lg)
+                    .padding(.horizontal, Spacing.lg)
                 }
 
                 // @0ne1ce: adding extra space in the bottom of ScrollView, because mini player isn't in .safeAreaInset(.bottom, ...)
@@ -126,10 +130,32 @@ struct MemoriesView<ViewModel: MemoriesViewModel>: View {
                     .frame(height: 80)
             }
         }
+        .alert(
+            "Удалить воспоминание?",
+            isPresented: Binding(
+                get: { viewModel.showDeleteConfirmation },
+                set: { viewModel.showDeleteConfirmation = $0 }
+            )
+        ) {
+            Button("Отмена", role: .cancel) {}
+            Button("Удалить", role: .destructive) {
+                viewModel.confirmDelete()
+            }
+        } message: {
+            Text("Это действие нельзя отменить.")
+        }
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .dismissKeyboardOnTap()
         .background(Color.cmBackgroundPrimary)
+    }
+
+    // MARK: - Private methods
+
+    private func handleDelete(_ memory: Memory) {
+        deletingMemoryID = memory.id
+        viewModel.onDeleteTap(memory)
+        deletingMemoryID = nil
     }
 }
 

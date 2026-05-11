@@ -55,16 +55,7 @@ struct MemoryCardView: View {
         }
         else if let urlString = memory.trackArtworkURLString,
                 let url = URL(string: urlString) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                default:
-                    placeholderView
-                }
-            }
+            MemoryArtworkLoader(url: url) // fix for memories with track covers as photo, placeholder otherwise
         }
         else {
             placeholderView
@@ -113,6 +104,61 @@ struct MemoryCardView: View {
         .padding(.vertical, Spacing.sm)
         .padding(.horizontal, Spacing.md)
         .background(.ultraThinMaterial)
+    }
+}
+
+// MARK: - MemoryArtworkLoader
+
+private struct MemoryArtworkLoader: View {
+    let url: URL
+
+    @State private var loadedImage: UIImage?
+    @State private var hasFailed = false
+
+    var body: some View {
+        Group {
+            if let loadedImage {
+                Image(uiImage: loadedImage)
+                    .resizable()
+                    .scaledToFill()
+            }
+            else if hasFailed {
+                fallbackView
+            }
+            else {
+                Color.cmBackgroundLight
+            }
+        }
+        .task(id: url) {
+            guard loadedImage == nil, !hasFailed else { return }
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                if let image = UIImage(data: data) {
+                    loadedImage = image
+                }
+                else {
+                    hasFailed = true
+                }
+            }
+            catch {
+                if !Task.isCancelled {
+                    hasFailed = true
+                }
+            }
+        }
+    }
+
+    private var fallbackView: some View {
+        LinearGradient(
+            colors: [Color.cmPrimaryLight, Color.cmPrimary],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay {
+            Image(systemName: "music.note")
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.6))
+        }
     }
 }
 
