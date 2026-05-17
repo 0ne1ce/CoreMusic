@@ -67,7 +67,7 @@ final class HomeViewModelImpl: HomeViewModel {
     init(
         router: HomeRouter,
         musicService: any MusicService,
-        playerService: PlayerServiceImpl,
+        playerService: any PlayerService,
         memoryRepository: MemoryRepository,
         notificationService: NotificationService,
         authService: AuthServiceImpl
@@ -79,22 +79,29 @@ final class HomeViewModelImpl: HomeViewModel {
         self.notificationService = notificationService
         self.authService = authService
 
-        playerService.objectWillChange
+        playerService.isPlayingPublisher
+            .combineLatest(playerService.currentTrackPublisher.map { $0?.id })
+            .map { _ in () }
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.objectWillChange.send()
-            }
+            .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
     }
 
     // MARK: - Methods
 
     func onAppear() async {
+        // @0ne1ce: Set shimmer so memories and shimmer appear together
+        if MusicAuthorization.currentStatus == .authorized, recentTracks.isEmpty {
+            isLoadingTracks = true
+        }
         loadMemories()
         await setupNotificationsIfNeeded()
 
         if MusicAuthorization.currentStatus == .authorized, recentTracks.isEmpty {
             await loadTracks()
+        }
+        else {
+            isLoadingTracks = false
         }
     }
 
@@ -177,7 +184,7 @@ final class HomeViewModelImpl: HomeViewModel {
 
     private let router: HomeRouter
     private let musicService: any MusicService
-    private let playerService: PlayerServiceImpl
+    private let playerService: any PlayerService
     private let memoryRepository: MemoryRepository
     private let notificationService: NotificationService
     private let authService: AuthServiceImpl

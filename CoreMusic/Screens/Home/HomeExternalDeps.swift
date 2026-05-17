@@ -4,7 +4,7 @@ import Foundation
 struct HomeExternalDeps {
     let appRouter: AppRouter
     let musicService: any MusicService
-    let playerService: PlayerServiceImpl
+    let playerService: PlayerService
     let memoryRepository: MemoryRepository
     let notificationService: NotificationService
     let authService: AuthServiceImpl

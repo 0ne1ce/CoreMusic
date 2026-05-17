@@ -43,7 +43,7 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
         memoryIDs: [UUID]?,
         router: MemoryCarouselRouter,
         memoryRepository: MemoryRepository,
-        playerService: PlayerServiceImpl
+        playerService: PlayerService
     ) {
         self.startMemoryID = startMemoryID
         self.memoryIDs = memoryIDs
@@ -51,11 +51,11 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
         self.memoryRepository = memoryRepository
         self.playerService = playerService
 
-        playerService.objectWillChange
+        playerService.isPlayingPublisher
+            .combineLatest(playerService.currentTrackPublisher.map { $0?.id })
+            .map { _ in () }
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.objectWillChange.send()
-            }
+            .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
 
         loadMemories()
@@ -137,7 +137,7 @@ final class MemoryCarouselViewModelImpl: MemoryCarouselViewModel {
     private let memoryIDs: [UUID]?
     private let router: MemoryCarouselRouter
     private let memoryRepository: MemoryRepository
-    private let playerService: PlayerServiceImpl
+    private let playerService: PlayerService
     private var cancellables = Set<AnyCancellable>()
     private var heroImages: [UUID: UIImage] = [:]
 

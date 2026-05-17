@@ -31,7 +31,7 @@ final class TrackPlayerViewModelImpl: TrackPlayerViewModel {
 
     // MARK: - Initializer
 
-    init(router: TrackPlayerRouter, playerService: PlayerServiceImpl) {
+    init(router: TrackPlayerRouter, playerService: PlayerService) {
         self.router = router
         self.playerService = playerService
         self.currentTrack = playerService.currentTrack
@@ -39,19 +39,19 @@ final class TrackPlayerViewModelImpl: TrackPlayerViewModel {
         self.playbackTime = playerService.playbackTime
         self.duration = playerService.duration
 
-        playerService.$currentTrack
+        playerService.currentTrackPublisher
             .receive(on: RunLoop.main)
             .assign(to: &$currentTrack)
 
-        playerService.$isPlaying
+        playerService.isPlayingPublisher
             .receive(on: RunLoop.main)
             .assign(to: &$isPlaying)
 
-        playerService.$playbackTime
+        playerService.playbackTimePublisher
             .receive(on: RunLoop.main)
             .assign(to: &$playbackTime)
 
-        playerService.$duration
+        playerService.durationPublisher
             .receive(on: RunLoop.main)
             .assign(to: &$duration)
     }

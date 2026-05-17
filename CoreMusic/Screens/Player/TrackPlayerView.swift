@@ -35,15 +35,9 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
             }
         }
         .background { backgroundView }
-        .onAppear {
-            progressValue = viewModel.playbackTime
-        }
-        .onChange(of: viewModel.playbackTime) { _, newValue in
-            guard !isEditingProgress else {
-                return
-            }
-
-            progressValue = newValue
+        .onChange(of: viewModel.currentTrack?.id) { _, _ in
+            isEditingProgress = false
+            progressValue = 0
         }
         .environment(\.colorScheme, .dark)
     }
@@ -60,8 +54,12 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
     @State private var progressValue: TimeInterval = 0
     @State private var isEditingProgress = false
 
+    private var displayedTime: TimeInterval {
+        isEditingProgress ? progressValue : viewModel.playbackTime
+    }
+
     private var remainingTime: TimeInterval {
-        max(viewModel.duration - progressValue, 0)
+        max(viewModel.duration - displayedTime, 0)
     }
 
     // MARK: - Private view properties and methods
@@ -119,23 +117,24 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
 
     private var progressSectionView: some View {
         VStack(spacing: Spacing.xs) {
-            Slider(
+            PlaybackSlider(
                 value: Binding(
-                    get: { progressValue },
+                    get: { displayedTime },
                     set: { progressValue = $0 }
                 ),
-                in: 0...max(viewModel.duration, 1),
+                bounds: 0...max(viewModel.duration, 1),
+                tint: Color.cmTextPrimary.opacity(0.65),
                 onEditingChanged: handleProgressEditingChanged
             )
-            .tint(Color.cmTextPrimary.opacity(0.65))
+            .frame(height: Layout.sliderHeight)
 
             progressTimeView
         }
     }
-    
+
     private var progressTimeView: some View {
         HStack {
-            Text(format(time: progressValue))
+            Text(format(time: displayedTime))
                 .font(.cmMeta)
                 .foregroundStyle(Color.cmTextSecondary)
 
@@ -153,7 +152,7 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
                 Image(systemName: "backward.fill")
                     .font(.system(size: Layout.secondaryControlSize, weight: .bold))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PlayerControlButtonStyle())
             .foregroundStyle(Color.cmTextPrimary)
 
             Button(action: handlePlaybackToggleTap) {
@@ -161,14 +160,14 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
                     .font(.system(size: Layout.primaryControlSize, weight: .bold))
                     .frame(width: Layout.primaryHitArea, height: Layout.primaryHitArea)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PlayerControlButtonStyle())
             .foregroundStyle(Color.cmTextPrimary)
 
             Button(action: handleSkipForwardTap) {
                 Image(systemName: "forward.fill")
                     .font(.system(size: Layout.secondaryControlSize, weight: .bold))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PlayerControlButtonStyle())
             .foregroundStyle(Color.cmTextPrimary)
         }
         .frame(maxWidth: .infinity)
@@ -201,13 +200,14 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
     }
 
     private func handleProgressEditingChanged(_ isEditing: Bool) {
-        isEditingProgress = isEditing
-
-        guard !isEditing else {
-            return
+        if isEditing {
+            progressValue = viewModel.playbackTime
+            isEditingProgress = true
         }
-
-        viewModel.onSeek(to: progressValue)
+        else {
+            viewModel.onSeek(to: progressValue)
+            isEditingProgress = false
+        }
     }
 
     private func format(time: TimeInterval) -> String {
@@ -218,21 +218,112 @@ struct TrackPlayerView<ViewModel: TrackPlayerViewModel>: View {
     }
 }
 
+private struct PlaybackSlider: UIViewRepresentable {
+    @Binding var value: TimeInterval
+    let bounds: ClosedRange<TimeInterval>
+    let tint: Color
+    let onEditingChanged: (Bool) -> Void
+
+    func makeUIView(context: Context) -> UISlider {
+        let slider = UISlider()
+        slider.isContinuous = true
+        slider.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.valueChanged(_:)),
+            for: .valueChanged
+        )
+        slider.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.touchDown(_:)),
+            for: .touchDown
+        )
+        slider.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.touchUp(_:)),
+            for: [.touchUpInside, .touchUpOutside, .touchCancel]
+        )
+        return slider
+    }
+
+    func updateUIView(_ slider: UISlider, context: Context) {
+        context.coordinator.parent = self
+        slider.minimumTrackTintColor = UIColor(tint)
+        slider.minimumValue = Float(bounds.lowerBound)
+        slider.maximumValue = Float(bounds.upperBound)
+
+        if !context.coordinator.isDragging {
+            let newValue = Float(value)
+            if abs(slider.value - newValue) > 0.01 {
+                slider.setValue(newValue, animated: false)
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject {
+        var parent: PlaybackSlider
+        var isDragging = false
+
+        init(parent: PlaybackSlider) {
+            self.parent = parent
+        }
+
+        @objc func valueChanged(_ slider: UISlider) {
+            parent.value = TimeInterval(slider.value)
+        }
+
+        @objc func touchDown(_ slider: UISlider) {
+            isDragging = true
+            parent.onEditingChanged(true)
+        }
+
+        @objc func touchUp(_ slider: UISlider) {
+            isDragging = false
+            parent.onEditingChanged(false)
+        }
+    }
+}
+
+private struct PlayerControlButtonStyle: ButtonStyle {
+    var pressedScale: CGFloat = 0.75
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? pressedScale : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.65), value: configuration.isPressed)
+    }
+}
+
 private struct BlurredArtworkOverlay: View {
     let track: LibraryTrack
 
     var body: some View {
-        if let artwork = track.artwork {
-            ArtworkImage(
-                artwork,
-                width: Layout.blurredArtworkSize,
-                height: Layout.blurredArtworkSize
-            )
-            .blur(radius: Layout.blurredArtworkBlur)
-            .scaleEffect(Layout.blurredArtworkScale)
-            .opacity(Layout.blurredArtworkOpacity)
-            .allowsHitTesting(false)
+        Group {
+            if let artwork = track.artwork {
+                ArtworkImage(
+                    artwork,
+                    width: Layout.blurredArtworkSize,
+                    height: Layout.blurredArtworkSize
+                )
+            }
+            else if let url = track.artworkURL {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Color.clear
+                }
+                .frame(width: Layout.blurredArtworkSize, height: Layout.blurredArtworkSize)
+            }
         }
+        .blur(radius: Layout.blurredArtworkBlur)
+        .scaleEffect(Layout.blurredArtworkScale)
+        .opacity(Layout.blurredArtworkOpacity)
+        .allowsHitTesting(false)
     }
 }
 
@@ -251,6 +342,7 @@ private enum Layout {
     static let blurredArtworkBlur: CGFloat = 60
     static let blurredArtworkScale: CGFloat = 1.3
     static let blurredArtworkOpacity: CGFloat = 0.7
+    static let sliderHeight: CGFloat = 30
 }
 
 #Preview {

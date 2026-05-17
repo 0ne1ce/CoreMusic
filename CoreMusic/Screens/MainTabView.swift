@@ -30,15 +30,7 @@ struct MainTabView: View {
             }
             .tint(.cmPrimaryLight)
 
-            if let currentTrack = playerService.currentTrack {
-                MiniPlayerView(
-                    track: currentTrack,
-                    playerService: playerService,
-                    onTap: handleMiniPlayerTap
-                )
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Layout.miniPlayerBottomPadding)
-            }
+            MiniPlayerOverlay()
         }
         .ignoresSafeArea(.keyboard)
         .fullScreenCover(item: $appRouter.presentedCover) { cover in
@@ -59,7 +51,6 @@ struct MainTabView: View {
     // MARK: - Private properties
 
     @Environment(AppRouter.self) private var appRouter
-    @EnvironmentObject private var playerService: PlayerServiceImpl
     @EnvironmentObject private var authService: AuthServiceImpl
     @AppStorage("hasCompletedAuth") private var hasCompletedAuth = false
 
@@ -118,17 +109,44 @@ struct MainTabView: View {
         }
     }
 
-    private func handleMiniPlayerTap() {
-        guard let currentTrackID = playerService.currentTrackID else {
-            return
-        }
-
-        appRouter.presentSheet(.player(songID: currentTrackID))
-    }
-
     private func handleAuthComplete() {
         hasCompletedAuth = true
         appRouter.dismissCover()
+    }
+}
+
+// MARK: - MiniPlayerOverlay
+
+// @0ne1ce: Isolated subscriber to PlayerServiceImpl so the heavy `MainTabView` body
+// is not re-evaluated on every playbackTime update.
+private struct MiniPlayerOverlay: View {
+    @EnvironmentObject private var playerService: PlayerServiceImpl
+    @Environment(AppRouter.self) private var appRouter
+
+    var body: some View {
+        if let currentTrack = playerService.currentTrack {
+            if playerService.currentQueue.count > 1 {
+                SwipeableMiniPlayerView(
+                    playerService: playerService,
+                    onTap: handleTap
+                )
+                .padding(.bottom, Layout.miniPlayerBottomPadding)
+            }
+            else {
+                MiniPlayerView(
+                    track: currentTrack,
+                    playerService: playerService,
+                    onTap: handleTap
+                )
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Layout.miniPlayerBottomPadding)
+            }
+        }
+    }
+
+    private func handleTap() {
+        guard let currentTrackID = playerService.currentTrackID else { return }
+        appRouter.presentSheet(.player(songID: currentTrackID))
     }
 }
 

@@ -12,8 +12,8 @@ struct PhotoGalleryView: View {
         ZStack(alignment: .topLeading) {
             Color.black.ignoresSafeArea()
 
-            imageView
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZoomableImageView(image: image)
+                .ignoresSafeArea()
 
             closeButton
         }
@@ -21,29 +21,7 @@ struct PhotoGalleryView: View {
         .transition(.opacity)
     }
 
-    // MARK: - Private properties
-
-    @State private var scale: CGFloat = 1
-    @State private var lastScale: CGFloat = 1
-    @State private var offset: CGSize = .zero
-    @State private var lastOffset: CGSize = .zero
-
-    @GestureState private var magnifyBy: CGFloat = 1
-
     // MARK: - Private views
-
-    private var imageView: some View {
-        Image(uiImage: image)
-            .resizable()
-            .scaledToFit()
-            .scaleEffect(scale * magnifyBy)
-            .offset(offset)
-            .gesture(magnificationGesture)
-            .gesture(dragGesture)
-            .onTapGesture(count: 2, perform: handleDoubleTap)
-            .animation(.spring(response: 0.3), value: scale)
-            .animation(.spring(response: 0.3), value: offset)
-    }
 
     private var closeButton: some View {
         Button(action: onClose) {
@@ -57,71 +35,113 @@ struct PhotoGalleryView: View {
         .padding(.leading, Spacing.lg)
         .padding(.top, Spacing.sm)
     }
+}
 
-    // MARK: - Private methods
+// MARK: - ZoomableImageView
 
-    private var magnificationGesture: some Gesture {
+private struct ZoomableImageView: View {
+    let image: UIImage
+
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+
+    var body: some View {
+        GeometryReader { geometry in
+            let size = geometry.size
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .scaleEffect(scale)
+                .offset(offset)
+                .frame(width: size.width, height: size.height)
+                .contentShape(Rectangle())
+                .gesture(
+                    SimultaneousGesture(
+                        magnifyGesture(in: size),
+                        panGesture(in: size)
+                    )
+                )
+                .onTapGesture(count: 2) { handleDoubleTap() }
+        }
+    }
+
+    // MARK: - Gestures
+
+    private func magnifyGesture(in size: CGSize) -> some Gesture {
         MagnifyGesture()
-            .updating($magnifyBy) { value, state, _ in
-                state = value.magnification
+            .onChanged { value in
+                let proposed = lastScale * value.magnification
+                scale = max(Layout.minScale, min(proposed, Layout.maxScale))
             }
-            .onEnded { value in
-                let newScale = lastScale * value.magnification
-                scale = max(Layout.minScale, min(newScale, Layout.maxScale))
+            .onEnded { _ in
                 lastScale = scale
-                clampOffset()
-
                 if scale <= Layout.minScale {
                     resetTransform()
+                }
+                else {
+                    clampAndCommit(in: size)
                 }
             }
     }
 
-    private var dragGesture: some Gesture {
+    private func panGesture(in size: CGSize) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                guard scale > 1 else { return }
-                offset = CGSize(
+                guard scale > Layout.minScale else { return }
+                let proposed = CGSize(
                     width: lastOffset.width + value.translation.width,
                     height: lastOffset.height + value.translation.height
                 )
+                offset = clamp(offset: proposed, in: size)
             }
             .onEnded { _ in
                 lastOffset = offset
-                clampOffset()
             }
     }
 
-    private func handleDoubleTap() {
-        if scale > 1 {
-            resetTransform()
+    // MARK: - Helpers
+
+    private func clamp(offset: CGSize, in size: CGSize) -> CGSize {
+        let maxX = max(0, (size.width * (scale - 1)) / 2)
+        let maxY = max(0, (size.height * (scale - 1)) / 2)
+        return CGSize(
+            width: min(maxX, max(-maxX, offset.width)),
+            height: min(maxY, max(-maxY, offset.height))
+        )
+    }
+
+    private func clampAndCommit(in size: CGSize) {
+        let clamped = clamp(offset: offset, in: size)
+        if clamped != offset {
+            withAnimation(.spring(response: 0.3)) {
+                offset = clamped
+            }
         }
-        else {
-            scale = Layout.doubleTapScale
-            lastScale = scale
-        }
+        lastOffset = clamped
     }
 
     private func resetTransform() {
-        scale = 1
-        lastScale = 1
-        offset = .zero
+        withAnimation(.spring(response: 0.3)) {
+            scale = Layout.minScale
+            offset = .zero
+        }
+        lastScale = Layout.minScale
         lastOffset = .zero
     }
 
-    private func clampOffset() {
-        guard scale > 1 else {
-            offset = .zero
-            lastOffset = .zero
-            return
+    private func handleDoubleTap() {
+        if scale > Layout.minScale {
+            resetTransform()
         }
-
-        let maxOffsetX = (scale - 1) * UIScreen.main.bounds.width / 2
-        let maxOffsetY = (scale - 1) * UIScreen.main.bounds.height / 2
-
-        offset.width = min(maxOffsetX, max(-maxOffsetX, offset.width))
-        offset.height = min(maxOffsetY, max(-maxOffsetY, offset.height))
-        lastOffset = offset
+        else {
+            withAnimation(.spring(response: 0.3)) {
+                scale = Layout.doubleTapScale
+            }
+            lastScale = Layout.doubleTapScale
+        }
     }
 }
 

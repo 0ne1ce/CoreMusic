@@ -3,5 +3,5 @@ import Foundation
 @MainActor
 struct TrackPlayerExternalDeps {
     let appRouter: AppRouter
-    let playerService: PlayerServiceImpl
+    let playerService: PlayerService
 }

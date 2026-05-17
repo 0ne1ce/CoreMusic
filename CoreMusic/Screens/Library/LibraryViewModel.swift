@@ -53,6 +53,13 @@ final class LibraryViewModelImpl: LibraryViewModel {
         self.router = router
         self.musicService = musicService
         self.playerService = playerService
+
+        playerService.isPlayingPublisher
+            .combineLatest(playerService.currentTrackPublisher.map { $0?.id })
+            .map { _ in () }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Public methods
@@ -104,6 +111,7 @@ final class LibraryViewModelImpl: LibraryViewModel {
     private let musicService: any MusicService
     private let playerService: PlayerService
     private let log = Logger(subsystem: "com.coremusic.app", category: "LibraryViewModel")
+    private var cancellables = Set<AnyCancellable>()
     private var fullSectionsTask: Task<Void, Never>?
     private var isLoadInProgress = false
     private var loadRevision = 0

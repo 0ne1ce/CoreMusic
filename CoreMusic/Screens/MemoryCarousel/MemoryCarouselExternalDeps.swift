@@ -4,5 +4,5 @@ import Foundation
 struct MemoryCarouselExternalDeps {
     let appRouter: AppRouter
     let memoryRepository: MemoryRepository
-    let playerService: PlayerServiceImpl
+    let playerService: PlayerService
 }
